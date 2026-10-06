@@ -46,7 +46,6 @@ export default function Admin({ data = {}, form }: any) {
           </article>
         </section>
 
-        <EngramReport report={data.engram} />
 
         <section aria-labelledby="users-title" className="users">
           <div className="section-head">
@@ -84,6 +83,7 @@ export default function Admin({ data = {}, form }: any) {
             </table>
           </div>
         </section>
+        <EngramReport report={data.engram} />
       </main>
     </div>
   );
