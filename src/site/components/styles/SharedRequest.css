@@ -16,24 +16,14 @@
   color: #237443;
   padding: 6px 9px;
   border-radius: 5px;
-  font: 11px "DM Mono";
+  font: 1rem var(--font-mono);
 }
 [data-view="SharedRequest"] .title h1 {
-  font:
-    500 32px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 500 32px var(--font-mono);
   margin: 0;
 }
 [data-view="SharedRequest"] .eyebrow {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   letter-spacing: 0.1em;
   color: #ff5b3d;
 }
@@ -41,11 +31,11 @@
   display: block;
   margin: 16px 0 40px;
   color: #737c76;
-  font: 11px "DM Mono";
+  font: 1rem var(--font-mono);
 }
 [data-view="SharedRequest"] h2 {
   margin-top: 28px;
-  font-size: 11px;
+  font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #67706a;
@@ -56,5 +46,5 @@
   padding: 17px;
   border-radius: 8px;
   overflow: auto;
-  font: 12px/1.7 "DM Mono";
+  font: 1rem/1.7 var(--font-mono);
 }

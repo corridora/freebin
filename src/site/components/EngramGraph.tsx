@@ -110,7 +110,7 @@ export default function EngramGraph({
                 y={group.y + 4}
                 textAnchor="middle"
                 fill="white"
-                fontSize={12}
+                fontSize="1rem"
               >
                 {group.id}
               </text>
@@ -209,7 +209,7 @@ export default function EngramGraph({
                     y={node.y - 18}
                     textAnchor="middle"
                     fill="#17231d"
-                    fontSize={12}
+                    fontSize="1rem"
                   >
                     {node.label.length > 25
                       ? node.label.slice(0, 24) + "…"

@@ -14,21 +14,11 @@
   margin: 8px 0 14px;
 }
 [data-view="Account"] .storage {
-  font:
-    12px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #68706b;
 }
 [data-view="Account"] .bin-count {
-  font:
-    12px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #7a827d;
 }
 [data-view="Account"] .signup-closed {
@@ -36,7 +26,7 @@
   border-radius: 8px;
   background: #fff0cf;
   color: #805717 !important;
-  font-size: 13px;
+  font-size: 1rem;
 }
 [data-view="Account"] .new-bin {
   margin: 34px 0;
@@ -46,7 +36,7 @@
   background: #fffdf8;
 }
 [data-view="Account"] .new-bin > label {
-  font-size: 12px;
+  font-size: 1rem;
   font-weight: 700;
 }
 [data-view="Account"] .new-bin > div {
@@ -82,7 +72,7 @@
 }
 [data-view="Account"] .auth label {
   display: block;
-  font-size: 12px;
+  font-size: 1rem;
   font-weight: 700;
   margin: 14px 0;
 }
@@ -124,7 +114,7 @@
 }
 [data-view="Account"] .error {
   color: #b73520;
-  font-size: 12px;
+  font-size: 1rem;
 }
 [data-view="Account"] .account-head {
   display: flex;
@@ -133,12 +123,7 @@
 }
 [data-view="Account"] .account-head p,
 [data-view="Account"] .eyebrow {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #ff5b3d;
   letter-spacing: 0.12em;
 }
@@ -180,17 +165,12 @@
   min-width: 0;
 }
 [data-view="Account"] .bin-row span {
-  font-size: 12px;
+  font-size: 1rem;
   color: #6d756f;
 }
 [data-view="Account"] .bin-row code {
   grid-column: 1/-1;
-  font:
-    10px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #68706b;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -222,7 +202,7 @@
 [data-view="Account"] .share-panel > label {
   display: grid;
   gap: 5px;
-  font-size: 12px;
+  font-size: 1rem;
   font-weight: 700;
 }
 [data-view="Account"] .share-panel > label input {
@@ -239,12 +219,12 @@
 }
 [data-view="Account"] .permission-presets span {
   margin-right: 2px;
-  font-size: 11px;
+  font-size: 1rem;
   font-weight: 700;
 }
 [data-view="Account"] .permission-presets button {
   padding: 6px 9px;
-  font-size: 11px;
+  font-size: 1rem;
 }
 [data-view="Account"] .permission-grid {
   display: grid;
@@ -258,7 +238,7 @@
 }
 [data-view="Account"] .permission-grid label {
   display: block;
-  font-size: 11px;
+  font-size: 1rem;
   margin: 5px 0;
 }
 [data-view="Account"] .share-panel ul {
@@ -279,12 +259,7 @@
   min-width: 0;
 }
 [data-view="Account"] .share-panel li small {
-  font:
-    10px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   overflow-wrap: anywhere;
 }
 [data-view="Account"] .shared-panel {
@@ -305,12 +280,7 @@
   gap: 4px;
 }
 [data-view="Account"] .key-list small {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #68706b;
 }
 [data-view="Account"] .new-token {

@@ -27,12 +27,7 @@
   margin: 0;
 }
 [data-view="Home"] .quickstart code {
-  font:
-    12px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #b73520;
 }
 [data-view="Home"] .sample {
@@ -45,12 +40,7 @@
   border-radius: 12px;
   background: #17231d;
   color: #dce7df;
-  font:
-    12px/1.75 "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem/1.75 var(--font-mono);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -63,7 +53,7 @@
   padding: 7px 10px;
   background: #27382f;
   color: #fff;
-  font: 11px "DM Mono";
+  font: 1rem var(--font-mono);
 }
 @media (max-width: 760px) {
   [data-view="Home"] .quickstart {

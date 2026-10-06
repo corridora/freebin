@@ -11,12 +11,7 @@
   padding: 58px 0 30px;
 }
 [data-view="SharedBin"] .shared > header p {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   letter-spacing: 0.15em;
   color: #ff5b3d;
 }
@@ -50,10 +45,10 @@
   background: #eef2ed;
 }
 [data-view="SharedBin"] code {
-  font-family: "DM Mono";
+  font-family: var(--font-mono);
 }
 [data-view="SharedBin"] time {
-  font-size: 11px;
+  font-size: 1rem;
   color: #727a75;
 }
 [data-view="SharedBin"] .details {
@@ -61,7 +56,7 @@
   background: #f8f6f0;
 }
 [data-view="SharedBin"] .details h2 {
-  font-size: 11px;
+  font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #68706b;
@@ -72,7 +67,7 @@
   padding: 14px;
   border-radius: 7px;
   overflow: auto;
-  font: 12px/1.6 "DM Mono";
+  font: 1rem/1.6 var(--font-mono);
 }
 @media (max-width: 600px) {
   [data-view="SharedBin"] article > button {
