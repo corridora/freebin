@@ -163,7 +163,7 @@ test("capture, live inspection, filtering, history, gzip, and export", async () 
     "compressed fixture",
   );
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export all", exact: true }).click();
+  await page.getByRole("button", { name: "Export bin data", exact: true }).click();
   expect((await download).suggestedFilename()).toMatch(/\.json$/);
   await page.screenshot({
     path: "artifacts/baseline/inspector.png",
@@ -382,6 +382,7 @@ test("React settings controls, forwarding conditions, and response-rule editor",
   const page = await owner.newPage();
   await page.goto(`/bin/${binId}`);
   await page.getByRole("button", { name: "Bin settings", exact: true }).click();
+  await page.getByRole("button", { name: "Config", exact: true }).click();
   const settings = page.locator(".response-settings");
   await settings.getByLabel("Status", { exact: true }).fill("201");
   await settings.getByLabel(/Response body/).fill("queued");
@@ -415,6 +416,7 @@ test("React settings controls, forwarding conditions, and response-rule editor",
   });
   expect(capture.status()).toBe(201);
   expect(await capture.text()).toBe("queued");
+  await page.getByRole("button", { name: "Bin settings", exact: true }).click();
   await page.getByRole("button", { name: /Response rules/ }).click();
   const editor = page.locator(".rule-editor");
   await editor.getByLabel("Name", { exact: true }).fill("UI rule");

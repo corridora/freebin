@@ -1,0 +1,144 @@
+[data-view="Inspector"] .request-histogram {
+  width: min(1100px, calc(100% - 48px));
+  margin: 16px auto;
+  padding: 20px;
+  border: 1px solid #d5d9d4;
+  border-radius: 10px;
+  background: #f7f4ed;
+}
+[data-view="Inspector"] .histogram-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+}
+[data-view="Inspector"] .histogram-summary span,
+[data-view="Inspector"] .histogram-range,
+[data-view="Inspector"] .histogram-help {
+  color: #69716c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+[data-view="Inspector"] .histogram-axis-title {
+  margin: 24px 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+[data-view="Inspector"] .histogram-chart {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+}
+[data-view="Inspector"] .histogram-y-axis {
+  position: relative;
+  height: 200px;
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    monospace;
+  color: #69716c;
+}
+[data-view="Inspector"] .histogram-y-axis span {
+  position: absolute;
+  right: 0;
+  transform: translateY(50%);
+}
+[data-view="Inspector"] .histogram-y-axis .histogram-y-max {
+  top: 0;
+  transform: translateY(-50%);
+}
+[data-view="Inspector"] .histogram-y-zero {
+  bottom: 0;
+}
+[data-view="Inspector"] .histogram-plot {
+  position: relative;
+  height: 200px;
+  border-bottom: 1px solid #aab6ad;
+}
+[data-view="Inspector"] .histogram-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed #d5d9d4;
+  pointer-events: none;
+}
+[data-view="Inspector"] .histogram-grid-top {
+  top: 0;
+}
+[data-view="Inspector"] .histogram-bars {
+  display: grid;
+  gap: 1px;
+  height: 100%;
+  position: relative;
+}
+[data-view="Inspector"] .histogram-bucket {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+[data-view="Inspector"] .histogram-bucket span {
+  display: block;
+  width: 100%;
+  background: #287348;
+  border-radius: 2px 2px 0 0;
+}
+[data-view="Inspector"] .histogram-bucket:hover,
+[data-view="Inspector"] .histogram-bucket:focus-visible {
+  background: #28734812;
+}
+[data-view="Inspector"] .histogram-bucket.selected span {
+  background: #ff5b3d;
+}
+[data-view="Inspector"] .histogram-bucket:focus-visible {
+  outline: 2px solid #17231d;
+  outline-offset: 1px;
+}
+[data-view="Inspector"] .histogram-x-axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #69716c;
+  font-size: 10px;
+  line-height: 1.5;
+}
+[data-view="Inspector"] .histogram-x-axis span {
+  max-width: 48%;
+}
+[data-view="Inspector"] .histogram-x-axis span:last-child {
+  text-align: right;
+}
+[data-view="Inspector"] .histogram-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  min-height: 50px;
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid #d5d9d4;
+  border-radius: 6px;
+  background: #fffdf8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+[data-view="Inspector"] .histogram-detail span {
+  color: #69716c;
+}
+[data-view="Inspector"] .histogram-empty p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  [data-view="Inspector"] .request-histogram {
+    width: calc(100% - 24px);
+    padding: 16px;
+  }
+}
