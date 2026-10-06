@@ -11,6 +11,9 @@ function applicationFile(value) {
     value === `${scope}worker-configuration.d.ts` ||
     value.startsWith(`${scope}server/generated/`) ||
     value.startsWith(`${scope}artifacts/`) ||
+    value.startsWith(`${scope}playwright-report/`) ||
+    value.startsWith(`${scope}test-results/`) ||
+    value.startsWith(`${scope}coverage/`) ||
     value.startsWith(`${scope}node_modules/`) ||
     value.startsWith(`${scope}dist/`) ||
     /(^|\/)\.[^/]+/.test(value)

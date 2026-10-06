@@ -4,6 +4,7 @@
   "private": true,
   "description": "Root commands for running freebin.org locally and deploying it to Cloudflare.",
   "scripts": {
+    "engram:build": "node src/site/scripts/build-engram.mjs",
     "start": "docker compose up --build",
     "local": "docker compose up --build",
     "local:down": "docker compose down",
@@ -20,5 +21,8 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "devDependencies": {
+    "@sentropic/engram": "0.19.0"
   }
 }

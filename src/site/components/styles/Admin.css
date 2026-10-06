@@ -151,6 +151,52 @@
   grid-template-columns: minmax(0, 1fr) 290px;
   border-top: 1px solid #d5d9d4;
 }
+[data-view="Admin"] .engram-visualizations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0 20px 20px;
+}
+[data-view="Admin"] .engram-visualizations figure {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #d5d9d4;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f5ed;
+}
+[data-view="Admin"] .engram-visualizations figcaption {
+  padding: 16px 16px 0;
+}
+[data-view="Admin"] .engram-visualizations h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+[data-view="Admin"] .engram-visualizations p {
+  color: #68706b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+[data-view="Admin"] .engram-visualizations svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 260px;
+}
+[data-view="Admin"] .engram-visualizations [role="button"] {
+  cursor: pointer;
+}
+[data-view="Admin"] .engram-visualizations [role="button"]:focus-visible {
+  outline: none;
+}
+[data-view="Admin"] .engram-visualizations [role="button"]:hover circle,
+[data-view="Admin"]
+  .engram-visualizations
+  [role="button"]:focus-visible
+  circle {
+  stroke: #17231d;
+  stroke-width: 4px;
+}
 [data-view="Admin"] .graph-browser > div {
   min-width: 0;
 }
@@ -287,6 +333,9 @@
   font-weight: 700;
 }
 @media (max-width: 760px) {
+  [data-view="Admin"] .engram-visualizations {
+    grid-template-columns: minmax(0, 1fr);
+  }
   [data-view="Admin"] .graph-browser {
     grid-template-columns: minmax(0, 1fr);
   }
