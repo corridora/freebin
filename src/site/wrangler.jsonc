@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "freebin-next",
+  "compatibility_date": "2026-10-05",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "main": "worker.js",
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS",
+  },
+  "keep_vars": true,
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "freebin-db",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+    },
+  ],
+  "vars": {
+    "SIGNUPS_ENABLED": "true",
+    "DEPLOYMENT_ENVIRONMENT": "local",
+    "DEMO_BIN_ID": "demo-public",
+    "DEMO_API_KEY": "freebin_demo_public",
+    "RATE_LIMIT_SALT": "local-development-only-change-before-deployment",
+    "ADMIN_EMAILS": "",
+    "RUM_SCRIPT_URL": "",
+    "RUM_APP_NAME": "freebin-web",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "",
+    "OTEL_SERVER_KEY": "",
+    "REPLAY_ALLOWED_ORIGINS": "",
+    "DEMO_RATE_LIMIT_RPS": "1",
+    "DEMO_BODY_LIMIT_BYTES": "20480",
+    "DEMO_STORAGE_LIMIT_BYTES": "1048576",
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false,
+    },
+    "traces": {
+      "enabled": true,
+    },
+  },
+}

@@ -1,0 +1,60 @@
+[data-view="SharedRequest"] .shared {
+  min-height: calc(100vh - 72px);
+  background: #f7f5ef;
+}
+[data-view="SharedRequest"] main {
+  width: min(840px, calc(100% - 32px));
+  margin: 60px auto;
+}
+[data-view="SharedRequest"] .title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+[data-view="SharedRequest"] .title b {
+  background: #dff2e5;
+  color: #237443;
+  padding: 6px 9px;
+  border-radius: 5px;
+  font: 11px "DM Mono";
+}
+[data-view="SharedRequest"] .title h1 {
+  font:
+    500 32px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  margin: 0;
+}
+[data-view="SharedRequest"] .eyebrow {
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  letter-spacing: 0.1em;
+  color: #ff5b3d;
+}
+[data-view="SharedRequest"] time {
+  display: block;
+  margin: 16px 0 40px;
+  color: #737c76;
+  font: 11px "DM Mono";
+}
+[data-view="SharedRequest"] h2 {
+  margin-top: 28px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #67706a;
+}
+[data-view="SharedRequest"] pre {
+  background: #17231d;
+  color: #dce7df;
+  padding: 17px;
+  border-radius: 8px;
+  overflow: auto;
+  font: 12px/1.7 "DM Mono";
+}

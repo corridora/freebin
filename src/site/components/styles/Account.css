@@ -1,0 +1,421 @@
+[data-view="Account"] .account {
+  min-height: calc(100vh - 72px);
+}
+[data-view="Account"] main {
+  width: min(850px, calc(100% - 32px));
+  margin: 70px auto;
+}
+[data-view="Account"] .auth {
+  max-width: 480px;
+}
+[data-view="Account"] .auth h1,
+[data-view="Account"] .account-head h1 {
+  font-size: 44px;
+  margin: 8px 0 14px;
+}
+[data-view="Account"] .storage {
+  font:
+    12px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #68706b;
+}
+[data-view="Account"] .bin-count {
+  font:
+    12px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #7a827d;
+}
+[data-view="Account"] .signup-closed {
+  padding: 13px 15px;
+  border-radius: 8px;
+  background: #fff0cf;
+  color: #805717 !important;
+  font-size: 13px;
+}
+[data-view="Account"] .new-bin {
+  margin: 34px 0;
+  padding: 18px;
+  border: 1px solid #d5d9d4;
+  border-radius: 10px;
+  background: #fffdf8;
+}
+[data-view="Account"] .new-bin > label {
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-view="Account"] .new-bin > div {
+  display: flex;
+  gap: 9px;
+  margin-top: 8px;
+}
+[data-view="Account"] .new-bin input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #bec5bf;
+  border-radius: 7px;
+}
+[data-view="Account"] .new-bin button {
+  border: 0;
+  border-radius: 7px;
+  padding: 0 16px;
+  background: #17231d;
+  color: #fff;
+  font-weight: 700;
+}
+[data-view="Account"] .new-bin :disabled {
+  opacity: 0.55;
+}
+[data-view="Account"] .auth > p:not(.eyebrow),
+[data-view="Account"] .muted {
+  color: #68706b;
+  line-height: 1.6;
+}
+[data-view="Account"] .auth form {
+  margin-top: 30px;
+}
+[data-view="Account"] .auth label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 14px 0;
+}
+[data-view="Account"] .auth input {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-top: 7px;
+  border: 1px solid #bec5bf;
+  border-radius: 8px;
+  background: #fff;
+}
+[data-view="Account"] .auth .terms-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  line-height: 1.5;
+}
+[data-view="Account"] .auth .terms-check input {
+  width: auto;
+  margin: 3px 0 0;
+  padding: 0;
+}
+[data-view="Account"] .auth form button {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #17231d;
+  color: #fff;
+  font-weight: 700;
+}
+[data-view="Account"] .switch {
+  display: block;
+  margin: 18px auto;
+  border: 0;
+  background: none;
+  color: #53635a;
+}
+[data-view="Account"] .error {
+  color: #b73520;
+  font-size: 12px;
+}
+[data-view="Account"] .account-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+[data-view="Account"] .account-head p,
+[data-view="Account"] .eyebrow {
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #ff5b3d;
+  letter-spacing: 0.12em;
+}
+[data-view="Account"] .account-head button,
+[data-view="Account"] .key-list button {
+  border: 1px solid #bfc6c0;
+  background: #fff;
+  padding: 9px 12px;
+  border-radius: 7px;
+  margin-left: 7px;
+}
+[data-view="Account"] .account-head .delete,
+[data-view="Account"] .key-list .delete {
+  color: #b73520;
+}
+[data-view="Account"] .bins,
+[data-view="Account"] .key-list {
+  border: 1px solid #d5d9d4;
+  border-radius: 10px;
+  overflow: hidden;
+}
+[data-view="Account"] .bin-entry + .bin-entry,
+[data-view="Account"] .bin-row + .bin-row,
+[data-view="Account"] .key-list > div + div {
+  border-top: 1px solid #d5d9d4;
+}
+[data-view="Account"] .bin-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: #fffdf8;
+}
+[data-view="Account"] .bin-row > a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 24px;
+  padding: 18px;
+  text-decoration: none;
+  min-width: 0;
+}
+[data-view="Account"] .bin-row span {
+  font-size: 12px;
+  color: #6d756f;
+}
+[data-view="Account"] .bin-row code {
+  grid-column: 1/-1;
+  font:
+    10px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #68706b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-view="Account"] .bin-buttons {
+  display: flex;
+  gap: 6px;
+  margin-right: 12px;
+}
+[data-view="Account"] .bin-buttons button,
+[data-view="Account"] .share-panel > button,
+[data-view="Account"] .share-panel li button,
+[data-view="Account"] .permission-presets button {
+  border: 1px solid #bfc6c0;
+  border-radius: 7px;
+  padding: 9px 11px;
+  background: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+[data-view="Account"] .share-panel {
+  padding: 16px;
+  border-top: 1px solid #d5d9d4;
+  background: #f7f4ed;
+}
+[data-view="Account"] .share-panel h3 {
+  margin: 0 0 10px;
+}
+[data-view="Account"] .share-panel > label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-view="Account"] .share-panel > label input {
+  padding: 9px;
+  border: 1px solid #bec5bf;
+  border-radius: 7px;
+}
+[data-view="Account"] .permission-presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+[data-view="Account"] .permission-presets span {
+  margin-right: 2px;
+  font-size: 11px;
+  font-weight: 700;
+}
+[data-view="Account"] .permission-presets button {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+[data-view="Account"] .permission-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+[data-view="Account"] .permission-grid fieldset {
+  border: 1px solid #d5d9d4;
+  border-radius: 7px;
+}
+[data-view="Account"] .permission-grid label {
+  display: block;
+  font-size: 11px;
+  margin: 5px 0;
+}
+[data-view="Account"] .share-panel ul {
+  padding: 0;
+  margin: 14px 0 0;
+  list-style: none;
+}
+[data-view="Account"] .share-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #d5d9d4;
+}
+[data-view="Account"] .share-panel li span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+[data-view="Account"] .share-panel li small {
+  font:
+    10px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  overflow-wrap: anywhere;
+}
+[data-view="Account"] .shared-panel {
+  grid-column: 1/-1;
+}
+[data-view="Account"] .shared-owner + .shared-owner {
+  margin-top: 24px;
+}
+[data-view="Account"] .key-list > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 18px;
+  background: #fffdf8;
+}
+[data-view="Account"] .key-list span {
+  display: grid;
+  gap: 4px;
+}
+[data-view="Account"] .key-list small {
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #68706b;
+}
+[data-view="Account"] .new-token {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 16px;
+  border-radius: 9px;
+  background: #e7f3e9;
+  color: #286744;
+}
+[data-view="Account"] .new-token strong {
+  grid-column: 1/-1;
+}
+[data-view="Account"] .new-token code {
+  overflow-wrap: anywhere;
+}
+[data-view="Account"] .new-token button {
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #286744;
+  color: #fff;
+}
+[data-view="Account"] .account-grid {
+  display: grid;
+  grid-template-columns: 200px minmax(200px, 1fr);
+  gap: 42px 24px;
+  align-items: start;
+  margin-top: 48px;
+}
+[data-view="Account"] .account-grid h2 {
+  margin: 0 0 16px;
+}
+[data-view="Account"] .add-panel {
+  width: 200px;
+  min-width: 0;
+}
+[data-view="Account"] .list-panel {
+  min-width: 200px;
+}
+[data-view="Account"] .list-panel > .muted {
+  margin-top: 0;
+}
+[data-view="Account"] .account-grid .new-bin {
+  margin: 0;
+  padding: 14px;
+}
+[data-view="Account"] .account-grid .new-bin > div {
+  flex-direction: column;
+}
+[data-view="Account"] .account-grid .new-bin button {
+  padding: 11px;
+}
+[data-view="Account"] .account-grid .new-bin input {
+  width: 100%;
+}
+@media (max-width: 600px) {
+  [data-view="Account"] .account-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Account"] .add-panel {
+    width: 100%;
+  }
+  [data-view="Account"] .list-panel {
+    min-width: 0;
+  }
+  [data-view="Account"] .bin-row {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Account"] .bin-row > a {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Account"] .bin-buttons {
+    margin: 0 18px 16px;
+  }
+  [data-view="Account"] .permission-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Account"] .new-bin > div {
+    flex-direction: column;
+  }
+  [data-view="Account"] .new-bin button {
+    padding: 11px;
+  }
+  [data-view="Account"] .auth h1,
+  [data-view="Account"] .account-head h1 {
+    font-size: 34px;
+  }
+  [data-view="Account"] .account-head {
+    align-items: flex-start;
+    gap: 20px;
+  }
+  [data-view="Account"] .account-head > div:last-child {
+    display: grid;
+    gap: 6px;
+  }
+  [data-view="Account"] .account-head button {
+    margin: 0;
+  }
+  [data-view="Account"] .new-token {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Account"] .new-token button {
+    justify-self: start;
+  }
+}

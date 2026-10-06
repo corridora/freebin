@@ -1,0 +1,150 @@
+[data-view="Header"] .site-header {
+  height: 72px;
+  border-bottom: 1px solid #c9cec6;
+  background: #fffdf8;
+}
+[data-view="Header"] nav {
+  width: min(1180px, calc(100% - 40px));
+  height: 100%;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+[data-view="Header"] .site-links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  font-size: 13px;
+  font-weight: 600;
+}
+[data-view="Header"] .site-links a {
+  text-decoration: none;
+  white-space: nowrap;
+}
+[data-view="Header"] .bin-menu {
+  position: relative;
+}
+[data-view="Header"] .bin-menu summary {
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+[data-view="Header"] .bin-menu summary::-webkit-details-marker {
+  display: none;
+}
+[data-view="Header"] .bin-menu summary::after {
+  content: " ▾";
+  font-size: 10px;
+}
+[data-view="Header"] .bin-options {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  padding: 7px;
+  border: 1px solid #c9cec6;
+  border-radius: 8px;
+  background: #fffdf8;
+  box-shadow: 0 12px 30px #17231d1a;
+}
+[data-view="Header"] .bin-options a {
+  display: block;
+  overflow: hidden;
+  padding: 9px 10px;
+  border-radius: 5px;
+  text-overflow: ellipsis;
+}
+[data-view="Header"] .bin-options a:hover {
+  background: #eef2ed;
+}
+[data-view="Header"] .create-bin-form {
+  display: grid;
+  gap: 7px;
+  margin-top: 5px;
+  padding: 10px;
+  border-top: 1px solid #d5d9d4;
+}
+[data-view="Header"] .create-bin-form label {
+  font-size: 11px;
+  color: #53635a;
+}
+[data-view="Header"] .create-bin-form input {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #bec5bf;
+  border-radius: 5px;
+  background: #fff;
+}
+[data-view="Header"] .create-bin-form button {
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;
+  background: #17231d;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+[data-view="Header"] .create-bin-form button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+[data-view="Header"] .bin-error {
+  font-size: 11px;
+  color: #b73520;
+}
+[data-view="Header"] .account-link {
+  padding: 8px 11px;
+  border: 1px solid #bfc6c0;
+  border-radius: 7px;
+}
+[data-view="Header"] .sign-out {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #53635a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  [data-view="Header"] nav {
+    width: calc(100% - 24px);
+  }
+  [data-view="Header"] .site-links {
+    gap: 13px;
+    font-size: 12px;
+  }
+  [data-view="Header"] .how,
+  [data-view="Header"] .terms-link {
+    display: none;
+  }
+  [data-view="Header"] .bin-options {
+    right: -52px;
+  }
+}
+@media (max-width: 540px) {
+  [data-view="Header"] .site-header {
+    height: auto;
+    min-height: 72px;
+  }
+  [data-view="Header"] nav {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 0;
+  }
+  [data-view="Header"] .site-links {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 430px) {
+  [data-view="Header"] .site-links a[href="/docs"] {
+    display: none;
+  }
+}

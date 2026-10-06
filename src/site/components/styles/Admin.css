@@ -1,0 +1,317 @@
+[data-view="Admin"] .admin {
+  width: min(1120px, calc(100% - 32px));
+  margin: auto;
+  padding: 64px 0 80px;
+}
+[data-view="Admin"] .admin > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 30px;
+  margin-bottom: 34px;
+}
+[data-view="Admin"] .admin h1 {
+  font-size: clamp(42px, 7vw, 72px);
+}
+[data-view="Admin"] .admin > header > span,
+[data-view="Admin"] .section-head > span {
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #68706b;
+}
+[data-view="Admin"] .totals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 42px;
+}
+[data-view="Admin"] .totals article {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid #c9cec6;
+  border-radius: 10px;
+  background: #fffdf8;
+}
+[data-view="Admin"] .totals span {
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #68706b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+[data-view="Admin"] .totals strong {
+  font-size: 28px;
+}
+[data-view="Admin"] .users {
+  border: 1px solid #c9cec6;
+  border-radius: 12px;
+  background: #fffdf8;
+  overflow: hidden;
+}
+[data-view="Admin"] .engram-report {
+  border: 1px solid #c9cec6;
+  border-radius: 12px;
+  background: #fffdf8;
+  overflow: hidden;
+  margin-bottom: 42px;
+}
+[data-view="Admin"] .engram-report .eyebrow {
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+[data-view="Admin"] .report-note,
+[data-view="Admin"] .report-warning {
+  padding: 0 20px;
+  color: #68706b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+[data-view="Admin"] .report-warning {
+  color: #8c3b20;
+}
+[data-view="Admin"] .graph-totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 20px;
+}
+[data-view="Admin"] .graph-totals > div {
+  padding: 16px;
+  background: #f4f0e7;
+  border-radius: 8px;
+}
+[data-view="Admin"] .graph-totals dt {
+  color: #68706b;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+[data-view="Admin"] .graph-totals dd {
+  margin: 8px 0 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+[data-view="Admin"] .report-metadata {
+  margin: 20px;
+  font-size: 12px;
+}
+[data-view="Admin"] .report-metadata summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+[data-view="Admin"] .report-metadata dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+[data-view="Admin"] .report-metadata dt {
+  color: #68706b;
+  min-width: 120px;
+}
+[data-view="Admin"] .report-metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+[data-view="Admin"] .graph-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px;
+  border-top: 1px solid #d5d9d4;
+}
+[data-view="Admin"] .graph-filters label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  flex: 1;
+  min-width: 200px;
+}
+[data-view="Admin"] .graph-filters input,
+[data-view="Admin"] .graph-filters select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #c9cec6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #fffdf8;
+  color: #17231d;
+}
+[data-view="Admin"] .graph-browser {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  border-top: 1px solid #d5d9d4;
+}
+[data-view="Admin"] .graph-browser > div {
+  min-width: 0;
+}
+[data-view="Admin"] .graph-browser td,
+[data-view="Admin"] .graph-browser code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+[data-view="Admin"] .graph-browser td:first-child {
+  min-width: 140px;
+}
+[data-view="Admin"] .node-kind {
+  display: block;
+  color: #68706b;
+  font-size: 10px;
+  font-weight: 400;
+  margin-top: 5px;
+}
+[data-view="Admin"] .report-button {
+  border: 1px solid #c9cec6;
+  border-radius: 6px;
+  background: #fffdf8;
+  color: #17231d;
+  cursor: pointer;
+  padding: 9px 12px;
+  font-size: 12px;
+}
+[data-view="Admin"] .report-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+[data-view="Admin"] .node-button {
+  border: 0;
+  border-radius: 3px;
+  padding: 3px;
+  background: transparent;
+  color: #17231d;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+[data-view="Admin"] .node-button:hover,
+[data-view="Admin"] .node-button[aria-pressed="true"] {
+  background: #f4f0e7;
+  color: #bb3b24;
+}
+[data-view="Admin"] .report-button:focus-visible,
+[data-view="Admin"] .node-button:focus-visible {
+  outline: 2px solid #ff5b3d;
+  outline-offset: 3px;
+}
+[data-view="Admin"] .graph-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  font-size: 11px;
+}
+[data-view="Admin"] .graph-pagination > div {
+  display: flex;
+  gap: 8px;
+}
+[data-view="Admin"] .node-details {
+  min-width: 0;
+  padding: 20px;
+  border-left: 1px solid #d5d9d4;
+  background: #f8f5ed;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+[data-view="Admin"] .node-details h3 {
+  margin: 0 0 12px;
+}
+[data-view="Admin"] .node-details ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  max-height: 550px;
+  overflow: auto;
+}
+[data-view="Admin"] .node-details li {
+  display: grid;
+  gap: 6px;
+  padding: 14px 0;
+  border-top: 1px solid #d5d9d4;
+}
+[data-view="Admin"] .node-details li > span {
+  color: #68706b;
+  font-size: 10px;
+}
+[data-view="Admin"] .section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+[data-view="Admin"] .section-head h2 {
+  margin: 0;
+}
+[data-view="Admin"] .table-wrap {
+  overflow: auto;
+}
+[data-view="Admin"] table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+[data-view="Admin"] th,
+[data-view="Admin"] td {
+  padding: 13px 16px;
+  border-top: 1px solid #d5d9d4;
+  white-space: nowrap;
+}
+[data-view="Admin"] th {
+  font:
+    11px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #68706b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+[data-view="Admin"] td {
+  font-size: 13px;
+}
+[data-view="Admin"] td:first-child {
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  [data-view="Admin"] .graph-browser {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-view="Admin"] .node-details {
+    border-left: 0;
+    border-top: 1px solid #d5d9d4;
+  }
+  [data-view="Admin"] .graph-totals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  [data-view="Admin"] .engram-report > .section-head {
+    align-items: start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  [data-view="Admin"] .admin > header {
+    align-items: start;
+    flex-direction: column;
+  }
+  [data-view="Admin"] .totals {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 440px) {
+  [data-view="Admin"] .totals {
+    grid-template-columns: 1fr;
+  }
+}

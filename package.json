@@ -1,0 +1,24 @@
+{
+  "name": "freebin.org",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Root commands for running freebin.org locally and deploying it to Cloudflare.",
+  "scripts": {
+    "start": "docker compose up --build",
+    "local": "docker compose up --build",
+    "local:down": "docker compose down",
+    "check": "npm run check --prefix src/site",
+    "build": "npm run build --prefix src/site",
+    "extension:install": "npm ci --prefix src/extension",
+    "extension:test": "npm test --prefix src/extension",
+    "deploy": "npm ci --prefix src/site && npm run deploy --prefix src/site",
+    "install:app": "npm ci --prefix src/site",
+    "dev": "npm run dev --prefix src/site",
+    "test": "npm test --prefix src/site",
+    "test:e2e": "npm run test:e2e --prefix src/site",
+    "deploy:dry-run": "npm run deploy:dry-run --prefix src/site"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

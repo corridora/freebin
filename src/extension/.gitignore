@@ -1,0 +1,9 @@
+# Dependencies and compiled extension output
+/node_modules/
+/out/
+/dist/
+*.vsix
+
+# Downloaded VS Code test runtime and coverage
+/.vscode-test/
+/coverage/

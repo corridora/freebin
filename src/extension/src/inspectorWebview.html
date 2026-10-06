@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none';style-src {{CSP_SOURCE}} 'nonce-{{NONCE}}';font-src {{CSP_SOURCE}};script-src 'nonce-{{NONCE}}'">
+  <title>Freebin Inspector</title>
+  <style nonce="{{NONCE}}">
+    {{FONT_FACES}}
+
+    :root {
+      color-scheme: light;
+      --background: #f4f0e7;
+      --surface: #fffdf8;
+      --ink: #17231d;
+      --muted: #67706a;
+      --border: #d5d9d4;
+      --accent: #ff5b3d;
+      --mono: "DM Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--background); color: var(--ink); font-size: 13px; line-height: 1.5; }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    a { color: inherit; }
+    .site-header { background: var(--surface); border-bottom: 1px solid #c9cec6; }
+    .brand-bar { width: min(1100px, calc(100% - 48px)); min-height: 72px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; letter-spacing: -.025em; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; padding: 4px; background: var(--accent); border-radius: 8px 8px 8px 2px; box-shadow: 4px 4px 0 var(--ink); }
+    .brand-mark svg { width: 100%; height: 100%; }
+    .context { color: var(--muted); font: 11px var(--mono); }
+    main { width: min(1100px, calc(100% - 48px)); margin: auto; padding: 24px 0 64px; }
+    .endpoint { display: flex; align-items: center; gap: 16px; padding: 13px 16px; border: 1px solid #cbd0cb; border-radius: 8px; background: #f3f1eb; }
+    .endpoint-label { flex: none; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .12em; }
+    .url { min-width: 0; font: 12px/1.6 var(--mono); overflow-wrap: anywhere; text-decoration: none; }
+    .url:hover { text-decoration: underline; }
+    .inspector-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 26px; }
+    h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.035em; }
+    .request-count { margin-left: 7px; color: #737c76; font: 11px var(--mono); letter-spacing: normal; }
+    .refresh { flex: none; padding: 8px 13px; border: 1px solid var(--ink); border-radius: 7px; background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; box-shadow: 3px 3px 0 var(--accent); }
+    .refresh:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--accent); }
+    .refresh:disabled { cursor: wait; opacity: .65; }
+    :is(button, input, select, a):focus-visible { outline: 2px solid #d23d25; outline-offset: 3px; }
+    .refresh-status { min-height: 17px; margin: 10px 0 14px; color: var(--muted); font: 11px/1.6 var(--mono); overflow-wrap: anywhere; }
+    .filters { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 10px; margin-bottom: 16px; }
+    input, select { min-width: 0; width: 100%; margin: 0; padding: 10px 12px; border: 1px solid #c7cdc8; border-radius: 7px; background: #fff; color: var(--ink); font: 12px/1.5 var(--mono); }
+    input::placeholder { color: var(--muted); opacity: 1; }
+    .list { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+    .request + .request { border-top: 1px solid var(--border); }
+    button.row { width: 100%; display: grid; grid-template-columns: 16px 58px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 17px 18px; border: 0; text-align: left; color: var(--ink); background: var(--surface); }
+    button.row:hover, button.row[aria-expanded="true"] { background: #eef2ed; }
+    button.row:focus-visible { outline-offset: -3px; }
+    .chevron { font-size: 22px; line-height: 1; color: #66716a; transition: transform .16s ease; }
+    [aria-expanded="true"] .chevron { transform: rotate(90deg); }
+    .method { width: fit-content; max-width: 100%; padding: 4px 6px; border-radius: 4px; background: #e1e7e2; color: #345443; font: 500 10px/1.5 var(--mono); overflow-wrap: anywhere; }
+    .method[data-method="POST"] { background: #dff2e5; color: #237443; }
+    .method[data-method="DELETE"] { background: #ffe2dc; color: #b73520; }
+    .method[data-method="PUT"], .method[data-method="PATCH"] { background: #fff0cf; color: #926513; }
+    .path { font: 12px/1.6 var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    time { color: #67706a; font-size: 10px; white-space: nowrap; }
+    .details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding: 22px 28px 28px 102px; border-top: 1px solid var(--border); background: #f8f6f0; }
+    .details section { min-width: 0; }
+    .details .body { grid-column: 1 / -1; }
+    .details h3 { margin: 0 0 9px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+    pre { max-height: 300px; margin: 0; padding: 16px; border-radius: 8px; background: var(--ink); color: #dce7df; font: 12px/1.7 var(--mono); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .empty { margin: 0; padding: 52px 20px; text-align: center; color: var(--muted); font: 12px/1.7 var(--mono); }
+    @media (max-width: 720px) {
+      button.row { grid-template-columns: 16px 58px minmax(0, 1fr); }
+      time { grid-column: 3; }
+      .details { padding-left: 24px; }
+    }
+    @media (max-width: 480px) {
+      .brand-bar, main { width: calc(100% - 24px); }
+      .brand-bar { min-height: 64px; }
+      .context { font-size: 10px; }
+      .brand { font-size: 16px; }
+      main { padding-top: 16px; }
+      .endpoint { align-items: flex-start; flex-direction: column; gap: 5px; padding: 12px; }
+      .inspector-heading { gap: 10px; }
+      h1 { font-size: 16px; }
+      .filters, .details { grid-template-columns: minmax(0, 1fr); }
+      button.row { padding: 14px 12px; gap: 8px; }
+      .details { padding: 18px 12px; }
+      .details .body { grid-column: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .chevron { transition: none; }
+      .refresh:hover { transform: none; }
+    }
+    @media (forced-colors: active) {
+      .brand-mark, .refresh { box-shadow: none; }
+      .method { border: 1px solid currentColor; }
+      button.row[aria-expanded="true"] { outline: 1px solid Highlight; outline-offset: -2px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="brand-bar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v7a4.5 4.5 0 0 1-4.5 4.5H11l-4.5 3v-3A4.5 4.5 0 0 1 3 14.62" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M1.75 10.5h8.5m-3-3 3 3-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="15.5" cy="10.5" r="2.25" stroke="currentColor" stroke-width="1.8" />
+            <circle cx="15.5" cy="10.5" r=".7" fill="currentColor" />
+          </svg>
+        </span>
+        freebin.org
+      </div>
+      <span class="context">VS Code inspector</span>
+    </div>
+  </header>
+  <main>
+    <div class="endpoint">
+      <span class="endpoint-label">Bin URL</span>
+      <a class="url" href="{{BIN_URL}}" target="_blank" rel="noopener noreferrer">{{BIN_URL}}</a>
+    </div>
+    <div class="inspector-heading">
+      <h1>Captured requests <span class="request-count" id="request-count"></span></h1>
+      <button class="refresh" id="refresh" type="button">Refresh</button>
+    </div>
+    <p class="refresh-status" id="refresh-status" role="status" aria-live="polite"></p>
+    <div class="filters">
+      <input id="search" type="search" aria-label="Search requests" placeholder="Search path, headers, query, or body">
+      <select id="method" aria-label="Filter by method">
+        <option value="">All methods</option>
+      </select>
+    </div>
+    <section class="list" id="list" aria-live="polite"></section>
+  </main>
+
+  <script nonce="{{NONCE}}" id="data" type="application/json">{{INTERACTIONS_JSON}}</script>
+  <script nonce="{{NONCE}}">
+    const vscode = acquireVsCodeApi();
+    let requests = JSON.parse(document.getElementById('data').textContent || '[]');
+    const list = document.getElementById('list');
+    const search = document.getElementById('search');
+    const method = document.getElementById('method');
+    const refresh = document.getElementById('refresh');
+    const refreshStatus = document.getElementById('refresh-status');
+    const requestCount = document.getElementById('request-count');
+    const expanded = new Set();
+
+    function renderMethods() {
+      const selected = method.value;
+      method.replaceChildren();
+      const all = document.createElement('option');
+      all.value = '';
+      all.textContent = 'All methods';
+      method.append(all);
+      for (const value of [...new Set(requests.map((item) => String(item.method || 'UNKNOWN').toUpperCase()))].sort()) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        method.append(option);
+      }
+      method.value = [...method.options].some((option) => option.value === selected) ? selected : '';
+    }
+
+    const text = (tag, value, className) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      node.textContent = String(value ?? '');
+      return node;
+    };
+
+    const block = (title, value) => {
+      const wrap = document.createElement('section');
+      if (title === 'Body') wrap.className = 'body';
+      wrap.append(
+        text('h3', title),
+        text('pre', typeof value === 'string' ? (value || '(empty)') : JSON.stringify(value ?? {}, null, 2))
+      );
+      return wrap;
+    };
+
+    function render() {
+      const needle = search.value.trim().toLowerCase();
+      const filtered = requests.filter((item) =>
+        (!method.value || String(item.method || 'UNKNOWN').toUpperCase() === method.value)
+        && (!needle || JSON.stringify(item).toLowerCase().includes(needle))
+      );
+      requestCount.textContent = `(${filtered.length}${filtered.length === requests.length ? '' : ` of ${requests.length}`})`;
+      list.replaceChildren();
+      if (!filtered.length) {
+        list.append(text('p', 'No requests match these filters.', 'empty'));
+        return;
+      }
+      for (const item of filtered) {
+        const id = String(item.id || '');
+        const article = document.createElement('article');
+        const button = document.createElement('button');
+        article.className = 'request';
+        button.className = 'row';
+        button.type = 'button';
+        button.setAttribute('aria-expanded', String(expanded.has(id)));
+        const chevron = text('span', '›', 'chevron');
+        chevron.setAttribute('aria-hidden', 'true');
+        const methodName = String(item.method || 'UNKNOWN').toUpperCase();
+        const badge = text('span', methodName, 'method');
+        badge.dataset.method = methodName;
+        button.append(
+          chevron,
+          badge,
+          text('span', item.path || '/', 'path'),
+          text('time', item.timestamp ? new Date(item.timestamp).toLocaleString() : '')
+        );
+        button.addEventListener('click', () => {
+          expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+          render();
+        });
+        article.append(button);
+        if (expanded.has(id)) {
+          const details = document.createElement('div');
+          details.className = 'details';
+          details.append(
+            block('Headers', item.headers),
+            block('Query', item.query),
+            block('Body', item.body),
+            block('Metadata', {
+              contentType: item.contentType,
+              remoteAddress: item.remoteAddress,
+              sizeBytes: item.sizeBytes
+            })
+          );
+          article.append(details);
+        }
+        list.append(article);
+      }
+    }
+
+    search.addEventListener('input', render);
+    method.addEventListener('change', render);
+    refresh.addEventListener('click', () => {
+      refresh.disabled = true;
+      refresh.textContent = 'Refreshing…';
+      refreshStatus.textContent = 'Fetching latest requests…';
+      vscode.postMessage({ type: 'refresh' });
+    });
+    window.addEventListener('message', (event) => {
+      const message = event.data;
+      if (message?.type === 'requests' && Array.isArray(message.interactions)) {
+        requests = message.interactions;
+        renderMethods();
+        render();
+        refreshStatus.textContent = `Updated ${new Date().toLocaleTimeString()} · ${requests.length} requests`;
+      } else if (message?.type === 'refreshError') {
+        refreshStatus.textContent = `Refresh failed: ${String(message.message || 'Unknown error')}`;
+      } else {
+        return;
+      }
+      refresh.disabled = false;
+      refresh.textContent = 'Refresh';
+    });
+    renderMethods();
+    render();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+{
+  "name": "freebin-next",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "0.10.3",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@modelcontextprotocol/server": "2.0.0",
+    "@vinext/cloudflare": "1.0.1",
+    "agents": "0.21.0",
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-server-dom-webpack": "19.3.0",
+    "swr": "2.4.0",
+    "vinext": "1.0.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.62.5",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitejs/plugin-rsc": "0.5.35",
+    "jsonc-parser": "3.3.1",
+    "prettier": "3.9.9",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "wrangler": "4.147.0"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "prebuild": "node scripts/snapshot-engram.mjs",
+    "predev": "node scripts/snapshot-engram.mjs",
+    "engram:snapshot": "node scripts/snapshot-engram.mjs",
+    "build": "vite build",
+    "start": "node scripts/preview.mjs",
+    "deploy": "npm run build && node scripts/deploy-worker.mjs",
+    "precheck": "node scripts/snapshot-engram.mjs",
+    "check": "tsc --noEmit --project tsconfig.check.json",
+    "pretest": "node scripts/snapshot-engram.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:e2e": "playwright test",
+    "test:admin": "playwright test --config playwright.admin.config.ts",
+    "types": "wrangler types worker-configuration.d.ts",
+    "prebuild:native": "node scripts/snapshot-engram.mjs",
+    "build:native": "next build",
+    "db:migrate:local": "wrangler d1 migrations apply freebin-db --local",
+    "db:migrate:remote": "node scripts/migrate-remote.mjs",
+    "demo:create": "node scripts/create-demo-bin.mjs --local",
+    "config:push": "node scripts/push-env-secrets.mjs",
+    "deploy:dry-run": "npm run build && node scripts/deploy-worker.mjs --dry-run",
+    "demo:create:remote": "node scripts/create-demo-bin.mjs --remote",
+    "baseline": "node scripts/record-baseline.mjs"
+  },
+  "overrides": {
+    "fflate": "0.8.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

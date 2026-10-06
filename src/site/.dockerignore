@@ -1,0 +1,10 @@
+node_modules
+dist
+.next
+.wrangler
+.env*
+.cloudflare
+artifacts
+playwright-report
+test-results
+*.tsbuildinfo

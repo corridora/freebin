@@ -1,0 +1,76 @@
+[data-view="Home"] .account-cta {
+  display: inline-block;
+  text-decoration: none;
+}
+[data-view="Home"] .account-cta:hover {
+  transform: translate(1px, 1px);
+}
+[data-view="Home"] .quickstart {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 55px;
+  align-items: center;
+  padding: 48px 0;
+  border-top: 1px solid #c9cec6;
+}
+[data-view="Home"] .quickstart .eyebrow {
+  margin-bottom: 12px;
+}
+[data-view="Home"] .quickstart h2 {
+  font-size: 36px;
+  letter-spacing: -0.04em;
+  margin: 0 0 12px;
+}
+[data-view="Home"] .quickstart p:last-child {
+  color: #68706b;
+  line-height: 1.6;
+  margin: 0;
+}
+[data-view="Home"] .quickstart code {
+  font:
+    12px "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: #b73520;
+}
+[data-view="Home"] .sample {
+  position: relative;
+  min-width: 0;
+}
+[data-view="Home"] .sample pre {
+  margin: 0;
+  padding: 24px 100px 24px 22px;
+  border-radius: 12px;
+  background: #17231d;
+  color: #dce7df;
+  font:
+    12px/1.75 "DM Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+[data-view="Home"] .sample button {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border: 1px solid #607168;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #27382f;
+  color: #fff;
+  font: 11px "DM Mono";
+}
+@media (max-width: 760px) {
+  [data-view="Home"] .quickstart {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  [data-view="Home"] .sample pre {
+    padding: 58px 16px 18px;
+  }
+}

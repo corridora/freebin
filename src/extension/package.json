@@ -1,0 +1,96 @@
+{
+  "name": "freebin-vscode",
+  "displayName": "Freebin Helper",
+  "description": "Manage freebin.org bins and inspect captured requests from VS Code.",
+  "version": "1.0.0",
+  "license": "MIT",
+  "publisher": "freebinorg",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/corridora/freebin.org.git"
+  },
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": ["Other"],
+  "main": "./out/extension.js",
+  "activationEvents": ["onView:freebinView"],
+  "contributes": {
+    "configuration": {
+      "title": "Freebin",
+      "properties": {
+        "freebin.baseUrl": {
+          "type": "string",
+          "default": "https://freebin.org",
+          "scope": "machine",
+          "description": "Base URL for the Freebin API. HTTP is accepted only for loopback development."
+        },
+        "freebin.connections": {
+          "type": "array",
+          "default": [],
+          "scope": "machine",
+          "markdownDescription": "Portable bin connections. Omit `apiKey` and use **Freebin: Set Bin API Key** to keep keys in SecretStorage.",
+          "items": {
+            "type": "object",
+            "required": ["binId", "url"],
+            "properties": {
+              "binId": { "type": "string", "pattern": "^[a-zA-Z0-9]{6,64}$" },
+              "name": { "type": "string", "maxLength": 60 },
+              "url": { "type": "string", "format": "uri" },
+              "apiKey": {
+                "type": "string",
+                "markdownDescription": "Optional plaintext API key. SecretStorage is recommended."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        { "id": "freebinContainer", "title": "Freebin", "icon": "resources/freebin.svg" }
+      ]
+    },
+    "views": {
+      "freebinContainer": [
+        { "id": "freebinView", "name": "Bins", "icon": "resources/freebin.svg" }
+      ]
+    },
+    "commands": [
+      { "command": "freebin.createBin", "title": "Freebin: Create Bin", "icon": "$(add)" },
+      { "command": "freebin.connectBin", "title": "Freebin: Connect Bin", "icon": "$(plug)" },
+      { "command": "freebin.openInspector", "title": "Freebin: Open Inspector" },
+      { "command": "freebin.openBinInBrowser", "title": "Freebin: Open Bin in Browser" },
+      { "command": "freebin.copyBinUrl", "title": "Freebin: Copy Bin URL" },
+      { "command": "freebin.removeConnection", "title": "Freebin: Remove Bin Connection" },
+      { "command": "freebin.setDefaultApiKey", "title": "Freebin: Set Default API Key" },
+      { "command": "freebin.setBinApiKey", "title": "Freebin: Set Bin API Key" },
+      { "command": "freebin.testConnection", "title": "Freebin: Test Connection" },
+      { "command": "freebin.openSettings", "title": "Freebin: Configure Settings", "icon": "$(gear)" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "freebin.createBin", "when": "view == freebinView", "group": "navigation@1" },
+        { "command": "freebin.connectBin", "when": "view == freebinView", "group": "navigation@2" },
+        { "command": "freebin.openSettings", "when": "view == freebinView", "group": "navigation@3" }
+      ],
+      "view/item/context": [
+        { "command": "freebin.openBinInBrowser", "when": "view == freebinView && viewItem == freebin.bin", "group": "navigation@1" },
+        { "command": "freebin.setBinApiKey", "when": "view == freebinView && viewItem == freebin.bin", "group": "navigation@2" },
+        { "command": "freebin.removeConnection", "when": "view == freebinView && viewItem == freebin.bin", "group": "navigation@9" }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./ && node scripts/copy-assets.mjs",
+    "watch": "tsc --watch -p ./",
+    "test": "npm run compile && node --test out/test/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.92.0",
+    "typescript": "^5.7.3"
+  }
+}

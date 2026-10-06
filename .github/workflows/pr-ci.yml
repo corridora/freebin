@@ -1,0 +1,141 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    name: Diff hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check diff hygiene
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --check "$BASE_SHA" "$HEAD_SHA"
+
+  site:
+    name: Next.js and Cloudflare checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/site
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Worker types
+        run: npm run types
+
+      - name: Check TypeScript
+        run: npm run check
+
+      - name: Test site behavior
+        run: npm test
+
+      - name: Build native Next.js frontend
+        run: npm run build:native
+
+      - name: Build Worker
+        run: npm run build
+
+      - name: Apply local D1 migration
+        run: npm run db:migrate:local
+
+      - name: Seed local demo data
+        run: npm run demo:create
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser parity on production Worker
+        run: npm run test:e2e
+
+      - name: Admin report access and browser behavior
+        run: npm run test:admin
+
+      - name: Package Cloudflare deployment
+        run: node scripts/deploy-worker.mjs --dry-run
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-browser-evidence
+          path: |
+            src/site/playwright-report
+            src/site/artifacts/baseline
+            src/site/artifacts/admin
+
+  extension:
+    name: Extension checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/extension
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile and test
+        run: npm test
+
+  result:
+    name: PR CI
+    if: always()
+    needs: [hygiene, site, extension]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report checks
+        env:
+          HYGIENE_RESULT: ${{ needs.hygiene.result }}
+          SITE_RESULT: ${{ needs.site.result }}
+          EXTENSION_RESULT: ${{ needs.extension.result }}
+        shell: bash
+        run: |
+          {
+            echo "## Pull request checks"
+            echo
+            echo "| Area | Impacted | Result |"
+            echo "| --- | --- | --- |"
+            echo "| Diff hygiene | yes | $HYGIENE_RESULT |"
+            echo "| Site | yes | $SITE_RESULT |"
+            echo "| Extension | yes | $EXTENSION_RESULT |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          test "$HYGIENE_RESULT" = "success"
+          test "$SITE_RESULT" = "success"
+          test "$EXTENSION_RESULT" = "success"

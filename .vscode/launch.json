@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Freebin Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/src/extension"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/src/extension/out/**/*.js"
+            ],
+            "preLaunchTask": "Compile Freebin Extension"
+        }
+    ]
+}

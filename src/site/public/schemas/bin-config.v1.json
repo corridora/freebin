@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://freebin.org/schemas/bin-config.v1.json",
+  "title": "Freebin portable bin configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "version", "bin", "rules"],
+  "properties": {
+    "$schema": {
+      "const": "https://freebin.org/schemas/bin-config.v1.json",
+      "type": "string"
+    },
+    "version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "bin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "response", "forwarding"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "\\S",
+          "description": "Trimmed name, 1–60 characters and at most 240 UTF-8 bytes."
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "body", "contentType", "headers"],
+          "properties": {
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            },
+            "body": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Limited to 500 UTF-8 bytes by the server."
+            },
+            "contentType": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Limited to 500 UTF-8 bytes by the server."
+            },
+            "headers": {
+              "type": "object",
+              "maxProperties": 20,
+              "additionalProperties": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "description": "At most 20 headers and 500 UTF-8 bytes for the entire JSON-serialized map. Each value is limited to 500 UTF-8 bytes and must be a valid HTTP header value. Hop-by-hop headers, Set-Cookie, and Content-Length listed by propertyNames are rejected.",
+              "propertyNames": {
+                "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$",
+                "not": {
+                  "pattern": "^\\s*(?:[sS][eE][tT]-[cC][oO][oO][kK][iI][eE]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[uU][pP][gG][rR][aA][dD][eE])\\s*$"
+                }
+              }
+            }
+          }
+        },
+        "forwarding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "url", "authHeaders"],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "url": {
+              "type": ["string", "null"],
+              "maxLength": 2000
+            },
+            "authHeaders": {
+              "type": "array",
+              "maxItems": 10,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$",
+                "not": {
+                  "pattern": "^\\s*(?:[hH][oO][sS][tT]|[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[kK][eE][eE][pP]-[aA][lL][iI][vV][eE]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][eE][nN][tT][iI][cC][aA][tT][eE]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[tT][eE]|[tT][rR][aA][iI][lL][eE][rR]|[uU][pP][gG][rR][aA][dD][eE]|[cC][fF]-[rR][aA][yY]|[cC][fF]-[cC][oO][nN][nN][eE][cC][tT][iI][nN][gG]-[iI][pP]|[xX]-[fF][oO][rR][wW][aA][rR][dD][eE][dD]-[fF][oO][rR]|[tT][rR][aA][cC][eE][pP][aA][rR][eE][nN][tT]|[tT][rR][aA][cC][eE][sS][tT][aA][tT][eE]|[bB][aA][gG][gG][aA][gG][eE])\\s*$"
+                }
+              },
+              "description": "Names are trimmed, lowercased, and deduplicated. Freebin authorization, hop-by-hop, source-address, and tracing headers cannot be retained; other sensitive headers are retained only when listed here."
+            },
+            "conditions": {
+              "type": "array",
+              "maxItems": 5,
+              "default": [],
+              "description": "All conditions must match for automatic forwarding. An empty or omitted list forwards all captures; manual forwarding bypasses this policy.",
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          },
+          "description": "Disabled forwarding may retain an unused URL. Enabled forwarding requires an HTTPS URL without embedded credentials and an origin explicitly allowed by the deployment. Omitted conditions default to an empty list.",
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "enabled": {
+                    "const": true
+                  }
+                },
+                "required": ["enabled"]
+              },
+              "then": {
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "enabled",
+          "conditions",
+          "responseStatus",
+          "responseBody",
+          "responseContentType",
+          "responseHeaders",
+          "responseDelayMs"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "\\S",
+            "description": "Trimmed name, 1–80 UTF-8 bytes."
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "conditions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "$ref": "#/$defs/condition"
+            }
+          },
+          "responseStatus": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 599
+          },
+          "responseBody": {
+            "type": "string",
+            "maxLength": 20480,
+            "description": "Limited to 20 KiB of UTF-8 bytes."
+          },
+          "responseContentType": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Limited to 500 UTF-8 bytes and must be a valid HTTP header value."
+          },
+          "responseHeaders": {
+            "type": "object",
+            "maxProperties": 20,
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "propertyNames": {
+              "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$",
+              "not": {
+                "pattern": "^\\s*(?:[sS][eE][tT]-[cC][oO][oO][kK][iI][eE]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[uU][pP][gG][rR][aA][dD][eE])\\s*$"
+              }
+            },
+            "description": "At most 20 headers and 4 KiB for the JSON-serialized map. Each value is limited to 500 UTF-8 bytes and must be a valid HTTP header value. Prohibited names match fallback response headers."
+          },
+          "responseDelayMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000
+          }
+        },
+        "description": "A complete portable rule. The normalized JSON-serialized rule is limited to 28 KiB by the server."
+      },
+      "description": "Evaluation order; at most 10 total rules and 5 enabled rules per bin. Import also checks account limits of 50 total and 25 enabled rules.",
+      "contains": {
+        "type": "object",
+        "required": ["enabled"],
+        "properties": {
+          "enabled": {
+            "const": true
+          }
+        }
+      },
+      "minContains": 0,
+      "maxContains": 5
+    }
+  },
+  "description": "Portable configuration exported by GET /api/v1/bins/{binId}/config and imported with PUT. Import rejects unknown properties and limits the serialized document to 320 KiB. String maxLength values describe character-count bounds; the server additionally enforces the UTF-8 byte limits documented on individual fields, validates HTTP header values, and checks forwarding origins against deployment configuration.",
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "operator"],
+      "properties": {
+        "source": {
+          "enum": ["method", "path", "query", "header", "body"]
+        },
+        "key": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Trimmed key; limited to 500 UTF-8 bytes by the server."
+        },
+        "operator": {
+          "enum": ["equals", "exists", "contains", "glob"]
+        },
+        "value": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Limited to 500 UTF-8 bytes by the server."
+        }
+      },
+      "description": "Conditions are ANDed. Query, header, and body sources require a nonblank key. Header names are case-insensitive; body keys use dot notation. Rules cannot inspect authorization, proxy-authorization, or cookie headers. Missing values compare as an empty string; exists ignores value.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source": {
+                "enum": ["query", "header", "body"]
+              }
+            },
+            "required": ["source"]
+          },
+          "then": {
+            "required": ["key"],
+            "properties": {
+              "key": {
+                "pattern": "\\S"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "source": {
+                "const": "header"
+              }
+            },
+            "required": ["source"]
+          },
+          "then": {
+            "properties": {
+              "key": {
+                "not": {
+                  "pattern": "^\\s*(?:[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[cC][oO][oO][kK][iI][eE])\\s*$"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

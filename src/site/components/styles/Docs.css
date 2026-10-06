@@ -1,0 +1,170 @@
+[data-view="Docs"] .docs {
+  max-width: 980px;
+  padding: 80px 0 110px;
+}
+[data-view="Docs"] .docs h1 {
+  font-size: 72px;
+}
+[data-view="Docs"] .lede,
+[data-view="Docs"] .docs section > p {
+  font-size: 17px;
+  line-height: 1.65;
+  color: #68706b;
+}
+[data-view="Docs"] .lede {
+  font-size: 19px;
+}
+[data-view="Docs"] .resources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 40px 0 55px;
+}
+[data-view="Docs"] .resources a {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 19px;
+  border: 1px solid #d8ddd9;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  background: #fff;
+}
+[data-view="Docs"] .resources a:hover {
+  border-color: #7a9484;
+}
+[data-view="Docs"] .resources span {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #68706b;
+}
+[data-view="Docs"] .docs section {
+  margin-top: 48px;
+}
+[data-view="Docs"] .docs h2 {
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+[data-view="Docs"] .docs h3 {
+  font-size: 17px;
+  margin: 35px 0 7px;
+}
+[data-view="Docs"] .docs pre {
+  background: #17231d;
+  color: #dce7df;
+  padding: 20px;
+  border-radius: 10px;
+  font:
+    13px/1.75 "DM Mono",
+    monospace;
+  overflow: auto;
+  white-space: pre;
+}
+[data-view="Docs"] .docs code {
+  font-family: "DM Mono", monospace;
+  font-size: 0.9em;
+}
+[data-view="Docs"] .table-wrap {
+  overflow: auto;
+  border: 1px solid #d8ddd9;
+  border-radius: 10px;
+}
+[data-view="Docs"] table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+[data-view="Docs"] th,
+[data-view="Docs"] td {
+  text-align: left;
+  padding: 13px 15px;
+  border-bottom: 1px solid #e8ebe9;
+  vertical-align: top;
+}
+[data-view="Docs"] thead th {
+  background: #f3f6f4;
+}
+[data-view="Docs"] tbody tr:last-child th,
+[data-view="Docs"] tbody tr:last-child td {
+  border-bottom: 0;
+}
+[data-view="Docs"] .endpoint-group > p {
+  margin: 0 0 14px;
+  color: #68706b;
+  line-height: 1.55;
+}
+[data-view="Docs"] .endpoint-list {
+  border: 1px solid #d8ddd9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+[data-view="Docs"] .endpoint {
+  display: grid;
+  grid-template-columns: minmax(310px, 1.15fr) minmax(260px, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  padding: 16px;
+  border-bottom: 1px solid #e8ebe9;
+}
+[data-view="Docs"] .endpoint:last-child {
+  border-bottom: 0;
+}
+[data-view="Docs"] .endpoint-signature {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
+}
+[data-view="Docs"] .endpoint-signature code {
+  overflow-wrap: anywhere;
+}
+[data-view="Docs"] .method {
+  flex: none;
+  font:
+    700 11px/1.5 "DM Mono",
+    monospace;
+  color: #24704a;
+  background: #e7f4eb;
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+[data-view="Docs"] .endpoint p {
+  margin: 0;
+  color: #4e5752;
+  font-size: 14px;
+  line-height: 1.45;
+}
+[data-view="Docs"] .auth {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: #68706b;
+  background: #f1f3f2;
+  border-radius: 999px;
+  padding: 5px 8px;
+}
+@media (max-width: 850px) {
+  [data-view="Docs"] .endpoint {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Docs"] .auth {
+    justify-self: start;
+  }
+}
+@media (max-width: 650px) {
+  [data-view="Docs"] .docs {
+    padding: 55px 0 80px;
+  }
+  [data-view="Docs"] .docs h1 {
+    font-size: 50px;
+  }
+  [data-view="Docs"] .resources {
+    grid-template-columns: 1fr;
+  }
+  [data-view="Docs"] .docs pre {
+    font-size: 12px;
+  }
+}

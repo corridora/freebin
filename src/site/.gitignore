@@ -1,0 +1,24 @@
+# Dependencies and local environment values
+/node_modules/
+.env*
+!.env.example
+.dev.vars*
+!.dev.vars.example
+
+# Generated Next.js, vinext, and Cloudflare output
+/.next/
+/next-env.d.ts
+/dist/
+/.vinext/
+/.wrangler/
+/.cloudflare/
+*.tsbuildinfo
+
+# Browser evidence and reports
+/artifacts/
+/playwright-report/
+/test-results/
+/coverage/
+
+# Regenerated before development, checks, tests, and builds
+/server/generated/engram-report.json

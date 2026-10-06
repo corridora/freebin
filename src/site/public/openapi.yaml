@@ -1,0 +1,2522 @@
+openapi: 3.1.0
+info:
+  title: freebin.org API
+  version: 1.0.0
+  description: |-
+    Manage bins and inspect captured development requests. Management endpoints are versioned under /api/v1. Capture endpoints use /b/{binId} with an optional path suffix and require an owner account API key; the designated public demo also accepts its deployment-configured demo key. Bin management accepts account API keys, browser sessions, and, where supported, anonymous inspector capabilities. Visiting the token-bearing anonymous inspectUrl exchanges that capability for a Secure, HttpOnly cookie scoped to the bin API and removes the token from the URL. Query tokens are not accepted directly on management APIs. JSON mutation requests with an Origin header must use the same origin as the service.
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: https://freebin.org
+security:
+  - bearerAuth: []
+tags:
+  - name: Configuration
+  - name: Authentication
+  - name: Account
+  - name: Bins
+  - name: Requests
+  - name: Sharing
+  - name: Capture
+paths:
+  /api/config:
+    get:
+      tags: [Configuration]
+      summary: Get public browser configuration
+      description: Returns signup availability and public telemetry configuration. Secret server keys are never exposed.
+      operationId: getPublicConfig
+      security: []
+      responses:
+        "200":
+          description: Public configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicConfig"
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register an account
+      description: Registration must be enabled. A successful response starts a 30-day browser session.
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          $ref: "#/components/responses/UserSession"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Sign in
+      description: Validates an email and password and starts a 30-day browser session.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserSession"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Sign out
+      description: Deletes the current server session, when present, and clears its browser cookie.
+      operationId: logout
+      security:
+        - cookieAuth: []
+        - {}
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/me:
+    get:
+      tags: [Account]
+      summary: Get the current account
+      description: Returns account storage usage and both owned and shared bins. Signed-out callers receive a successful response with user set to null and an empty bins array.
+      operationId: getCurrentAccount
+      security:
+        - cookieAuth: []
+        - {}
+      responses:
+        "200":
+          description: Current account state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+    delete:
+      tags: [Account]
+      summary: Permanently delete the current account
+      description: Deletes the signed-in account and clears its browser session.
+      operationId: deleteCurrentAccount
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/account/token:
+    get:
+      tags: [Account]
+      summary: List API keys
+      description: Returns key metadata only; complete token values are never returned after creation.
+      operationId: listApiKeys
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Active API-key metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [keys]
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApiKey"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+    post:
+      tags: [Account]
+      summary: Create an API key
+      description: Accounts may have five active API keys. The complete token is returned only in this response.
+      operationId: createApiKey
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 60
+                  default: API key
+      responses:
+        "201":
+          description: API key created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [key, token]
+                properties:
+                  key:
+                    $ref: "#/components/schemas/ApiKey"
+                  token:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      tags: [Account]
+      summary: Revoke an API key
+      operationId: revokeApiKey
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/bins:
+    get:
+      tags: [Bins]
+      summary: List bins
+      operationId: listBins
+      responses:
+        "200":
+          description: Bins belonging to the authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bins]
+                properties:
+                  bins:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BinSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+      description: Requires a nonempty bearer credential. Account API keys list owned bins; anonymous bin-owner capabilities list their bin. Unrecognized nonempty credentials return an empty bins array. Browser sessions alone do not authenticate this endpoint.
+    post:
+      tags: [Bins]
+      summary: Create a bin
+      description: Creates a private bin for a bearer-key or browser-session user. Without either credential, creates a public anonymous bin that cannot capture requests.
+      operationId: createBin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [termsAccepted]
+              properties:
+                name:
+                  type: string
+                  maxLength: 60
+                termsAccepted:
+                  type: boolean
+                  const: true
+      responses:
+        "201":
+          description: Bin created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateBinResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Five-bin account limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/bins/{binId}:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Bins]
+      summary: Get bin configuration
+      operationId: getBin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: Bin configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bin:
+                    $ref: "#/components/schemas/Bin"
+                required:
+                  - bin
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+    patch:
+      tags: [Bins]
+      summary: Update response and forwarding settings
+      description: Response body, content type, and serialized response headers are each limited to 500 UTF-8 bytes. Automatic forwarding supports one allowlisted HTTPS base URL, up to five AND conditions, a 10-second timeout, and no retries. An empty condition list forwards all new captures; omitted PATCH conditions preserve the current policy.
+      operationId: updateBinResponse
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResponseConfiguration"
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+    delete:
+      tags: [Bins]
+      summary: Permanently delete a bin and its retained requests
+      operationId: deleteBin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/config:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Bins]
+      summary: Export portable bin configuration and response rules
+      operationId: exportBinConfiguration
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: Version 1 portable configuration; excludes captures, attempts, Freebin credentials, ownership, shares, and internal IDs. User-authored response or destination values may still be sensitive.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PortableBinConfiguration" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Bins]
+      summary: Replace portable bin configuration and response rules
+      description: Atomically replaces the bin name, fallback response, forwarding settings, and ordered response rules. Captures and replay history are preserved.
+      operationId: importBinConfiguration
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PortableBinConfiguration" }
+      responses:
+        "200":
+          description: Configuration replaced
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - ok
+                  - importedRules
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                  importedRules:
+                    type: integer
+                    minimum: 0
+                    maximum: 10
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: Account rule limit would be exceeded }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/bins/{binId}/rules:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Bins]
+      summary: List conditional response rules in evaluation order
+      operationId: listResponseRules
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: Rules and applicable limits
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - rules
+                  - limits
+                properties:
+                  rules:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ResponseRule"
+                  limits:
+                    $ref: "#/components/schemas/RuleLimits"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+    post:
+      tags: [Bins]
+      summary: Create a conditional response rule
+      operationId: createResponseRule
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResponseRuleInput" }
+      responses:
+        "201":
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - rule
+                properties:
+                  rule:
+                    $ref: "#/components/schemas/ResponseRule"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: Rule limit reached }
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [Bins]
+      summary: Replace response-rule evaluation order
+      operationId: reorderResponseRules
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ruleIds]
+              properties:
+                ruleIds:
+                  type: array
+                  items: { type: string }
+                  uniqueItems: true
+                  maxItems: 10
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/v1/bins/{binId}/rules/{ruleId}:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - name: ruleId
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [Bins]
+      summary: Update a conditional response rule
+      operationId: updateResponseRule
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResponseRuleUpdate"
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Bins]
+      summary: Delete a conditional response rule
+      operationId: deleteResponseRule
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/v1/bins/{binId}/rules/test:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    post:
+      tags: [Bins]
+      summary: Test a synthetic request against enabled rules
+      operationId: testResponseRules
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RuleTestRequest" }
+      responses:
+        "200":
+          description: First matching enabled rule, or null
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - matched
+                properties:
+                  matched:
+                    oneOf:
+                      - type: "null"
+                      - type: object
+                        required:
+                          - id
+                          - name
+                          - revision
+                          - responseStatus
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          revision:
+                            type: integer
+                          responseStatus:
+                            type: integer
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/bins/{binId}/interactions:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Requests]
+      summary: List retained requests
+      operationId: listRequests
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            oneOf:
+              - type: integer
+                minimum: 1
+                maximum: 100
+              - type: string
+                enum: [all]
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Newest requests first
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - meta
+                  - interactions
+                properties:
+                  meta:
+                    type: object
+                    required: [total, limit, offset]
+                    properties:
+                      total:
+                        type: integer
+                      limit:
+                        oneOf:
+                          - type: integer
+                          - type: string
+                            enum: [all]
+                      offset:
+                        type: integer
+                  interactions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CapturedRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/stream:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Requests]
+      summary: Stream request-created events
+      operationId: streamRequests
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      parameters:
+        - name: lastId
+          in: query
+          description: Last observed request ID; suppresses an immediate duplicate event after reconnecting.
+          schema:
+            type: string
+        - name: Last-Event-ID
+          in: header
+          description: Last observed request ID; takes precedence over lastId.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Server-sent events; each request event contains a request ID
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "403":
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+        "503":
+          description: Database unavailable
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/bins/{binId}/interactions/{requestId}:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - $ref: "#/components/parameters/RequestId"
+    delete:
+      tags: [Requests]
+      summary: Permanently delete one retained request
+      operationId: deleteRequest
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/export:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Requests]
+      summary: Export a bin and all retained requests
+      operationId: exportBin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: JSON download
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exportedAt:
+                    type: string
+                    format: date-time
+                  bin:
+                    $ref: "#/components/schemas/ExportBin"
+                  requests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CapturedRequest"
+                  rules:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ExportResponseRule"
+                  replayAttempts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ExportReplayAttempt"
+                  forwardAttempts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ExportForwardAttempt"
+                required:
+                  - exportedAt
+                  - bin
+                  - rules
+                  - requests
+                  - replayAttempts
+                  - forwardAttempts
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/interactions/{requestId}/export:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - $ref: "#/components/parameters/RequestId"
+    get:
+      tags: [Requests]
+      summary: Export one retained request
+      operationId: exportRequest
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: JSON download
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exportedAt:
+                    type: string
+                    format: date-time
+                  binId:
+                    type: string
+                  request:
+                    $ref: "#/components/schemas/CapturedRequest"
+                  replayAttempts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ReplayAttempt"
+                  forwardAttempts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ForwardAttempt"
+                required:
+                  - exportedAt
+                  - binId
+                  - request
+                  - replayAttempts
+                  - forwardAttempts
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/interactions/{requestId}/replay:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - $ref: "#/components/parameters/RequestId"
+    get:
+      tags: [Requests]
+      summary: List retained replay attempts for a captured request
+      operationId: listReplayAttempts
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: Newest retained attempts first
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attempts:
+                    type: array
+                    items: { $ref: "#/components/schemas/ReplayAttempt" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+    post:
+      tags: [Requests]
+      summary: Replay or manually forward one captured request
+      operationId: replayRequest
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplayInput"
+      responses:
+        "200":
+          description: Destination response summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReplayResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          description: Destination transport failed; attempt details are returned even when retention immediately removes the record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReplayResult"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+      description: Replay requires a public HTTPS target whose origin is allowed by this deployment. Manual forwarding uses the configured forwarding URL and requires forwarding to be enabled. Both operations preserve an attempt record, use a 10-second timeout without following redirects, and apply egress rate limits. Destination HTTP errors still return 200 with the destination status; transport failures return 502.
+  /api/v1/bins/{binId}/interactions/{requestId}/forwarding:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - $ref: "#/components/parameters/RequestId"
+    get:
+      tags: [Requests]
+      summary: List automatic-forwarding attempts for a captured request
+      description: Returns up to 50 automatic-forwarding attempts, newest attempt number first. Each automatic forward currently creates one attempt without retries.
+      operationId: listForwardingAttempts
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: Automatic-forwarding attempt history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attempts:
+                    type: array
+                    items: { $ref: "#/components/schemas/ForwardAttempt" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/share:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    post:
+      tags: [Sharing]
+      summary: Enable, rotate, or disable a public bin link
+      operationId: shareBin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareInput"
+      responses:
+        "200":
+          $ref: "#/components/responses/Share"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/collaborators:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Sharing]
+      summary: List registered users invited to a bin
+      operationId: listBinCollaborators
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      responses:
+        "200":
+          description: Collaborators sorted by email
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - collaborators
+                properties:
+                  collaborators:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Collaborator"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+    put:
+      tags: [Sharing]
+      summary: Invite a registered user or replace their bin permissions
+      operationId: putBinCollaborator
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, permissions]
+              properties:
+                email: { type: string, format: email }
+                permissions:
+                  $ref: "#/components/schemas/BinPermissions"
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: No registered user has the supplied email }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+      description: Requires the bin owner browser session. Invite a registered user with at least one supported permission set to true. API keys and anonymous inspector capabilities cannot change collaborators.
+    delete:
+      tags: [Sharing]
+      summary: Remove a user from a bin
+      operationId: deleteBinCollaborator
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [collaboratorId]
+              properties:
+                collaboratorId: { type: string }
+      responses:
+        "200":
+          $ref: "#/components/responses/Ok"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/audit:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags: [Sharing]
+      summary: List retained user-initiated mutation events for a bin
+      operationId: listBinAuditEvents
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+      responses:
+        "200":
+          description: Newest events first
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: "#/components/schemas/AuditEvent" }
+                  limit: { type: integer }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /api/v1/bins/{binId}/interactions/{requestId}/share:
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - $ref: "#/components/parameters/RequestId"
+    post:
+      tags: [Sharing]
+      summary: Enable, rotate, or disable a public request link
+      operationId: shareRequest
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - inspectorToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareInput"
+      responses:
+        "200":
+          $ref: "#/components/responses/Share"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /b/{binId}/{path}:
+    description: "Capture an authenticated request with a path suffix, which may contain multiple slash-separated segments. Owner account keys are required, except for the deployment-configured key on the designated public demo. All successful captures return X-Freebin-Captured: true and the configured response status, body, and content type. GET and HEAD captures have no stored body."
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Capture path suffix; supports nested segments. Use /b/{binId} to capture at the root.
+    get:
+      tags:
+        - Capture
+      summary: Capture a GET request
+      operationId: captureGet
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+    post:
+      tags:
+        - Capture
+      summary: Capture a POST request
+      operationId: capturePost
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    put:
+      tags:
+        - Capture
+      summary: Capture a PUT request
+      operationId: capturePut
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    patch:
+      tags:
+        - Capture
+      summary: Capture a PATCH request
+      operationId: capturePatch
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    delete:
+      tags:
+        - Capture
+      summary: Capture a DELETE request
+      operationId: captureDelete
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    options:
+      tags:
+        - Capture
+      summary: Capture an OPTIONS request
+      operationId: captureOptions
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    head:
+      tags:
+        - Capture
+      summary: Capture a HEAD request
+      operationId: captureHead
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+  /b/{binId}:
+    description: Capture at the bin root without a path suffix. Authentication and response behavior match the capture endpoint with a suffix.
+    parameters:
+      - $ref: "#/components/parameters/BinId"
+    get:
+      tags:
+        - Capture
+      summary: Capture a GET request
+      operationId: captureGetRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+    post:
+      tags:
+        - Capture
+      summary: Capture a POST request
+      operationId: capturePostRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    put:
+      tags:
+        - Capture
+      summary: Capture a PUT request
+      operationId: capturePutRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    patch:
+      tags:
+        - Capture
+      summary: Capture a PATCH request
+      operationId: capturePatchRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    delete:
+      tags:
+        - Capture
+      summary: Capture a DELETE request
+      operationId: captureDeleteRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    options:
+      tags:
+        - Capture
+      summary: Capture an OPTIONS request
+      operationId: captureOptionsRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+      requestBody:
+        description: Raw captured body of any content type. Account captures allow up to 1 MiB; demo limits are deployment-configured (20 KiB by default). Gzip is retained in the application compressed-body encoding.
+        content:
+          "*/*":
+            schema: {}
+    head:
+      tags:
+        - Capture
+      summary: Capture a HEAD request
+      operationId: captureHeadRoot
+      responses:
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+        default:
+          description: Configured fallback or first matching rule response. Status and media type depend on bin configuration.
+          headers:
+            X-Freebin-Captured:
+              schema:
+                type: string
+                const: "true"
+            X-Freebin-Rule:
+              description: Present when a response rule matched.
+              schema:
+                type: string
+          content:
+            "*/*":
+              schema: {}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: freebin API key
+      description: "Account API key in Authorization: Bearer <key>. Capture requires a key belonging to the destination owner, except the designated public-demo key. Bin listing also accepts an anonymous bin owner capability and returns an empty list for an unrecognized nonempty key."
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: freebin_session
+    inspectorToken:
+      type: http
+      scheme: bearer
+      bearerFormat: Freebin anonymous inspector capability
+      description: "Anonymous bin owner capability in Authorization: Bearer <token>. Supported bin-management handlers also accept the bin-specific freebin_inspector_<binId> cookie issued by visiting inspectUrl. A token query parameter alone does not authenticate API requests."
+  parameters:
+    BinId:
+      name: binId
+      in: path
+      required: true
+      schema:
+        type: string
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+          description: Optional machine-readable error code.
+    User:
+      type: object
+      required: [id, email]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+    RegisterInput:
+      type: object
+      required: [email, password, termsAccepted]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 10
+          maxLength: 128
+        termsAccepted:
+          type: boolean
+          const: true
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    PublicConfig:
+      type: object
+      required:
+        - rumScriptUrl
+        - rumAppName
+        - deploymentEnvironment
+        - appVersion
+        - signupsEnabled
+      properties:
+        rumScriptUrl:
+          type:
+            - string
+            - "null"
+          format: uri
+          description: Public browser RUM script URL.
+        rumAppName:
+          type: string
+        deploymentEnvironment:
+          type: string
+        appVersion:
+          type:
+            - string
+            - "null"
+        signupsEnabled:
+          type: boolean
+    ApiKey:
+      type: object
+      required: [id, name, prefix, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        prefix:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: [string, "null"]
+          format: date-time
+    Account:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            storageLimitBytes:
+              type: integer
+            storageUsedBytes:
+              type: integer
+    AccountResponse:
+      type: object
+      required: [user, bins]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/Account"
+            - type: "null"
+        bins:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountBin"
+    BinSummary:
+      type: object
+      required: [binId, name, createdAt]
+      properties:
+        binId:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        interactionCount:
+          type: integer
+    Bin:
+      allOf:
+        - $ref: "#/components/schemas/BinSummary"
+        - type: object
+          properties:
+            responseStatus:
+              type: integer
+            responseBody:
+              type: string
+            responseContentType:
+              type: string
+            responseHeaders:
+              type: object
+              additionalProperties:
+                type: string
+            publicShareToken:
+              type: [string, "null"]
+            forwardingEnabled:
+              type: boolean
+            forwardingUrl:
+              type: [string, "null"]
+            forwardingAuthHeaders:
+              type: array
+              items:
+                type: string
+              description: Credential-like request headers to retain. Authorization is always removed because it carries the Freebin API key.
+            forwardingConditions:
+              $ref: "#/components/schemas/ForwardingConditions"
+    CreateBinResponse:
+      type: object
+      required: [bin, inspectUrl]
+      properties:
+        bin:
+          allOf:
+            - $ref: "#/components/schemas/BinSummary"
+            - type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+        inspectUrl:
+          type: string
+          format: uri
+        token:
+          type: string
+          description: One-time anonymous inspector token; omitted for user-owned bins.
+    CapturedRequest:
+      type: object
+      required: [id, method, path, headers, query, timestamp, sizeBytes]
+      properties:
+        id:
+          type: string
+        method:
+          type: string
+        path:
+          type: string
+        query:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        body:
+          type:
+            - string
+            - "null"
+          description: Null for captures without a body (including GET and HEAD); gzip captures use the application compressed-body encoding.
+        contentType:
+          type: [string, "null"]
+        remoteAddress:
+          type: [string, "null"]
+        timestamp:
+          type: string
+          format: date-time
+        sizeBytes:
+          type: integer
+        publicShareToken:
+          type: [string, "null"]
+        forwardStatus:
+          type: [string, "null"]
+          enum: [pending, delivered, failed, null]
+        forwardStatusCode:
+          type: [integer, "null"]
+        forwardError:
+          type: [string, "null"]
+        forwardedAt:
+          type: [string, "null"]
+          format: date-time
+        forwardDurationMs:
+          type: [integer, "null"]
+        matchedRuleId:
+          type: [string, "null"]
+        matchedRuleName:
+          type: [string, "null"]
+        matchedRuleRevision:
+          type: [integer, "null"]
+    ReplayAttempt:
+      type: object
+      required:
+        [
+          id,
+          operation,
+          targetUrl,
+          method,
+          path,
+          query,
+          headers,
+          durationMs,
+          sizeBytes,
+          createdAt,
+        ]
+      properties:
+        id: { type: string }
+        operation: { type: string, enum: [replay, forward] }
+        targetUrl: { type: string, format: uri }
+        method: { type: string }
+        path: { type: string }
+        query: { type: object, additionalProperties: true }
+        headers: { type: object, additionalProperties: { type: string } }
+        body: { type: [string, "null"] }
+        responseStatus: { type: [integer, "null"] }
+        responseStatusText: { type: [string, "null"] }
+        error: { type: [string, "null"] }
+        durationMs: { type: integer }
+        sizeBytes: { type: integer }
+        createdAt: { type: string, format: date-time }
+    ForwardAttempt:
+      type: object
+      required: [id, attemptNumber, status, startedAt]
+      properties:
+        id: { type: string }
+        attemptNumber: { type: integer, minimum: 1 }
+        targetUrl:
+          type: [string, "null"]
+          format: uri
+          description: Null only for records backfilled from before destination history was retained.
+        status: { type: string, enum: [pending, delivered, failed] }
+        responseStatus: { type: [integer, "null"] }
+        error: { type: [string, "null"] }
+        durationMs: { type: [integer, "null"] }
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: [string, "null"], format: date-time }
+    AuditEvent:
+      type: object
+      required: [id, actorType, action, targetType, metadata, createdAt]
+      properties:
+        id: { type: string }
+        actorEmail: { type: [string, "null"], format: email }
+        actorType: { type: string, enum: [session, api_key, inspector] }
+        action: { type: string }
+        targetType: { type: string }
+        targetId: { type: [string, "null"] }
+        metadata: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+    RuleCondition:
+      $ref: ./schemas/bin-config.v1.json#/$defs/condition
+    ResponseRuleInput:
+      type: object
+      required:
+        - name
+        - conditions
+      properties:
+        name:
+          type: string
+          maxLength: 80
+          minLength: 1
+          pattern: \S
+          description: Trimmed name, 1–80 UTF-8 bytes.
+        enabled:
+          type: boolean
+          default: true
+        conditions:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/RuleCondition"
+        responseStatus:
+          type: integer
+          minimum: 200
+          maximum: 599
+          default: 200
+        responseBody:
+          type: string
+          maxLength: 20480
+          default: ""
+          description: Limited to 20 KiB of UTF-8 bytes.
+        responseContentType:
+          type: string
+          maxLength: 500
+          default: text/plain; charset=utf-8
+          description: Limited to 500 UTF-8 bytes and must be a valid HTTP header value.
+        responseHeaders:
+          type: object
+          maxProperties: 20
+          additionalProperties:
+            type: string
+            maxLength: 500
+          propertyNames:
+            pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
+            not:
+              pattern: ^\s*(?:[sS][eE][tT]-[cC][oO][oO][kK][iI][eE]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[uU][pP][gG][rR][aA][dD][eE])\s*$
+          description: At most 20 headers and 4 KiB for the JSON-serialized map. Each value is limited to 500 UTF-8 bytes and must be a valid HTTP header value. Prohibited names match fallback response headers.
+          default: {}
+        responseDelayMs:
+          type: integer
+          minimum: 0
+          maximum: 5000
+          default: 0
+      description: Create input. Name and conditions are required; omitted response fields use defaults. Names and other textual limits are enforced in UTF-8 bytes.
+    ForwardingConditions:
+      type: array
+      maxItems: 5
+      default: []
+      description: All conditions must match for automatic forwarding. An empty list forwards every new capture. Conditions share response-rule matching semantics; query/header/body require a key, header names are case-insensitive, JSON fields use dot notation, and authorization/proxy-authorization/cookie headers cannot be inspected. Keys and values are limited to 500 UTF-8 bytes. Compressed bodies cannot match body conditions. Manual replay and bulk forwarding bypass these conditions.
+      items:
+        $ref: "#/components/schemas/RuleCondition"
+    ResponseRule:
+      allOf:
+        - $ref: "#/components/schemas/ResponseRuleInput"
+        - type: object
+          required:
+            - id
+            - priority
+            - revision
+            - createdAt
+            - updatedAt
+            - name
+            - enabled
+            - conditions
+            - responseStatus
+            - responseBody
+            - responseContentType
+            - responseHeaders
+            - responseDelayMs
+          properties:
+            id:
+              type: string
+            priority:
+              type: integer
+            revision:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    RuleTestRequest:
+      type: object
+      properties:
+        method: { type: string }
+        path: { type: string }
+        query:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: array
+                items: { type: string }
+        headers:
+          type: object
+          additionalProperties: { type: string }
+        body: { type: [string, "null"] }
+        contentType: { type: string }
+    PortableBinConfiguration:
+      $ref: ./schemas/bin-config.v1.json
+    ResponseConfiguration:
+      type: object
+      properties:
+        responseStatus:
+          type: integer
+          minimum: 100
+          maximum: 599
+        responseBody:
+          type: string
+          maxLength: 500
+          description: Limited to 500 UTF-8 bytes; maxLength is an additional character-count hint.
+        responseContentType:
+          type: string
+          maxLength: 500
+          description: Limited to 500 UTF-8 bytes; maxLength is an additional character-count hint.
+        responseHeaders:
+          type: object
+          maxProperties: 20
+          additionalProperties:
+            type: string
+          description: After filtering prohibited response headers, at most 20 entries are retained; the serialized map is limited to 500 UTF-8 bytes.
+        forwardingEnabled:
+          type: boolean
+        forwardingUrl:
+          type:
+            - string
+            - "null"
+          maxLength: 2000
+          description: Null or an empty string clears the destination while forwarding is disabled. Enabling forwarding requires an allowlisted HTTPS URL without embedded credentials. The URL is limited to 2,000 UTF-8 bytes.
+        forwardingAuthHeaders:
+          type: array
+          maxItems: 10
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
+            not:
+              pattern: ^\s*(?:[hH][oO][sS][tT]|[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[kK][eE][eE][pP]-[aA][lL][iI][vV][eE]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][eE][nN][tT][iI][cC][aA][tT][eE]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[tT][eE]|[tT][rR][aA][iI][lL][eE][rR]|[uU][pP][gG][rR][aA][dD][eE]|[cC][fF]-[rR][aA][yY]|[cC][fF]-[cC][oO][nN][nN][eE][cC][tT][iI][nN][gG]-[iI][pP]|[xX]-[fF][oO][rR][wW][aA][rR][dD][eE][dD]-[fF][oO][rR]|[tT][rR][aA][cC][eE][pP][aA][rR][eE][nN][tT]|[tT][rR][aA][cC][eE][sS][tT][aA][tT][eE]|[bB][aA][gG][gG][aA][gG][eE])\s*$
+          description: Names are trimmed, lowercased, and deduplicated. Freebin authorization, hop-by-hop, source-address, and tracing headers cannot be retained; other sensitive headers are retained only when listed here.
+        forwardingConditions:
+          $ref: "#/components/schemas/ForwardingConditions"
+    ShareInput:
+      type: object
+      required: [public]
+      properties:
+        public:
+          type: boolean
+    ShareResponse:
+      type: object
+      properties:
+        public:
+          type: boolean
+        shareUrl:
+          type: [string, "null"]
+          format: uri
+    AccountBin:
+      allOf:
+        - $ref: "#/components/schemas/BinSummary"
+        - type: object
+          required:
+            - publicShareToken
+            - ownerEmail
+            - isOwner
+            - permissions
+          properties:
+            publicShareToken:
+              type:
+                - string
+                - "null"
+            ownerEmail:
+              type: string
+              format: email
+            isOwner:
+              type: integer
+              enum:
+                - 0
+                - 1
+            permissions:
+              type:
+                - string
+                - "null"
+              description: JSON-serialized permission map for shared bins; null for owners.
+    ResponseRuleUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 80
+          minLength: 1
+          pattern: \S
+          description: Trimmed name, 1–80 UTF-8 bytes.
+        enabled:
+          type: boolean
+        conditions:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/RuleCondition"
+        responseStatus:
+          type: integer
+          minimum: 200
+          maximum: 599
+        responseBody:
+          type: string
+          maxLength: 20480
+          description: Limited to 20 KiB of UTF-8 bytes.
+        responseContentType:
+          type: string
+          maxLength: 500
+          description: Limited to 500 UTF-8 bytes and must be a valid HTTP header value.
+        responseHeaders:
+          type: object
+          maxProperties: 20
+          additionalProperties:
+            type: string
+            maxLength: 500
+          propertyNames:
+            pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
+            not:
+              pattern: ^\s*(?:[sS][eE][tT]-[cC][oO][oO][kK][iI][eE]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[uU][pP][gG][rR][aA][dD][eE])\s*$
+          description: At most 20 headers and 4 KiB for the JSON-serialized map. Each value is limited to 500 UTF-8 bytes and must be a valid HTTP header value. Prohibited names match fallback response headers.
+        responseDelayMs:
+          type: integer
+          minimum: 0
+          maximum: 5000
+      description: Partial update. Omitted fields preserve the current rule; sending enabled alone is valid.
+    RuleLimits:
+      type: object
+      required:
+        - enabledPerBin
+        - totalPerBin
+        - enabledPerAccount
+        - totalPerAccount
+        - conditions
+        - serializedBytes
+        - responseBodyBytes
+        - responseHeadersBytes
+        - delayMs
+      properties:
+        enabledPerBin:
+          type: integer
+          const: 5
+        totalPerBin:
+          type: integer
+          const: 10
+        enabledPerAccount:
+          type: integer
+          const: 25
+        totalPerAccount:
+          type: integer
+          const: 50
+        conditions:
+          type: integer
+          const: 5
+        serializedBytes:
+          type: integer
+          const: 8192
+        responseBodyBytes:
+          type: integer
+          const: 20480
+        responseHeadersBytes:
+          type: integer
+          const: 4096
+        delayMs:
+          type: integer
+          const: 5000
+    ReplayInput:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Required and validated as an HTTPS URL for replay; ignored when operation is forward.
+        method:
+          type: string
+          maxLength: 32
+          pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
+        path:
+          type: string
+          maxLength: 2000
+          pattern: ^/
+          description: Starts with /; limited to 2,000 UTF-8 bytes.
+        query:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+                maxLength: 500
+              - type: array
+                items:
+                  type: string
+                  maxLength: 500
+          propertyNames:
+            maxLength: 500
+          description: Keys and each value are limited to 500 UTF-8 bytes.
+        headers:
+          type: object
+          maxProperties: 50
+          additionalProperties:
+            type: string
+          description: At most 50 input entries and 16 KiB for the serialized outbound header map. Freebin authorization, hop-by-hop, and tracing headers are stripped.
+        body:
+          type:
+            - string
+            - "null"
+          maxLength: 1048576
+          description: Limited to 1 MiB of UTF-8 bytes; null removes the body. Omitted fields reuse the captured request.
+        operation:
+          type: string
+          enum:
+            - replay
+            - forward
+          default: replay
+          description: Forward uses the bin's configured automatic-forwarding destination and header allowlist; url is ignored. Manual forwarding does not apply automatic-forwarding conditions.
+      allOf:
+        - if:
+            properties:
+              operation:
+                const: forward
+            required:
+              - operation
+          then: {}
+          else:
+            required:
+              - url
+            properties:
+              url:
+                format: uri
+                pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+    ReplayResult:
+      type: object
+      required:
+        - ok
+        - status
+        - statusText
+        - error
+        - attempt
+      properties:
+        ok:
+          type: boolean
+        status:
+          type:
+            - integer
+            - "null"
+        statusText:
+          type:
+            - string
+            - "null"
+        error:
+          type:
+            - string
+            - "null"
+        attempt:
+          allOf:
+            - $ref: "#/components/schemas/ReplayAttempt"
+            - type: object
+              required:
+                - retained
+              properties:
+                retained:
+                  type: boolean
+    ExportBin:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - forwardingEnabled
+        - forwardingUrl
+        - forwardingAuthHeaders
+        - forwardingConditions
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        forwardingEnabled:
+          type: boolean
+        forwardingUrl:
+          type:
+            - string
+            - "null"
+        forwardingAuthHeaders:
+          type: array
+          items:
+            type: string
+        forwardingConditions:
+          $ref: "#/components/schemas/ForwardingConditions"
+    ExportResponseRule:
+      allOf:
+        - $ref: "#/components/schemas/ResponseRuleInput"
+        - type: object
+          required:
+            - id
+            - enabled
+            - priority
+            - revision
+            - responseStatus
+            - responseBody
+            - responseContentType
+            - responseHeaders
+            - responseDelayMs
+          properties:
+            id:
+              type: string
+            enabled:
+              type: boolean
+            priority:
+              type: integer
+            revision:
+              type: integer
+            responseStatus:
+              type: integer
+            responseBody:
+              type: string
+            responseContentType:
+              type: string
+            responseHeaders:
+              type: object
+              maxProperties: 20
+              additionalProperties:
+                type: string
+                maxLength: 500
+              propertyNames:
+                pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
+                not:
+                  pattern: ^\s*(?:[sS][eE][tT]-[cC][oO][oO][kK][iI][eE]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[uU][pP][gG][rR][aA][dD][eE])\s*$
+              description: At most 20 headers and 4 KiB for the JSON-serialized map. Each value is limited to 500 UTF-8 bytes and must be a valid HTTP header value. Prohibited names match fallback response headers.
+            responseDelayMs:
+              type: integer
+    ExportReplayAttempt:
+      allOf:
+        - $ref: "#/components/schemas/ReplayAttempt"
+        - type: object
+          required:
+            - requestId
+          properties:
+            requestId:
+              type: string
+    ExportForwardAttempt:
+      allOf:
+        - $ref: "#/components/schemas/ForwardAttempt"
+        - type: object
+          required:
+            - requestId
+          properties:
+            requestId:
+              type: string
+    BinPermissions:
+      type: object
+      additionalProperties: false
+      properties:
+        bin.view:
+          type: boolean
+        bin.edit:
+          type: boolean
+        requests.view:
+          type: boolean
+        requests.delete:
+          type: boolean
+        exports.view:
+          type: boolean
+        exports.edit:
+          type: boolean
+        replay.view:
+          type: boolean
+        replay.edit:
+          type: boolean
+        replay.delete:
+          type: boolean
+        forwarding.view:
+          type: boolean
+        forwarding.edit:
+          type: boolean
+        forwarding.delete:
+          type: boolean
+        rules.view:
+          type: boolean
+        rules.edit:
+          type: boolean
+        rules.delete:
+          type: boolean
+        config.view:
+          type: boolean
+        config.edit:
+          type: boolean
+        sharing.view:
+          type: boolean
+        sharing.edit:
+          type: boolean
+        sharing.delete:
+          type: boolean
+        collaborators.view:
+          type: boolean
+        audit.view:
+          type: boolean
+      description: Supported collaborator permissions. Invitations require at least one supported permission set to true; other entries are ignored by the server.
+    Collaborator:
+      type: object
+      required:
+        - id
+        - email
+        - permissions
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        permissions:
+          $ref: "#/components/schemas/BinPermissions"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  responses:
+    UserSession:
+      description: Authenticated user; a secure HttpOnly session cookie is set.
+      headers:
+        Set-Cookie:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user]
+            properties:
+              user:
+                $ref: "#/components/schemas/User"
+    Ok:
+      description: Operation completed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                const: true
+    Share:
+      description: Current public-link state
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ShareResponse"
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Authentication required or supplied credentials are invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Access denied, registration disabled, or the request violates the same-origin mutation policy.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Service limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Present when the handler supplies a retry delay; not all rate-limit responses include this header.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Resource already exists or an account limit was reached
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unavailable:
+      description: A required service or configuration is unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    PayloadTooLarge:
+      description: Request body exceeds the applicable account or demo limit.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
