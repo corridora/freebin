@@ -11,7 +11,7 @@
   font-size: clamp(48px, 8vw, 78px);
 }
 [data-view="Terms"] .terms header > p:last-child {
-  font-size: 18px;
+  font-size: 1rem;
   line-height: 1.7;
   color: #59625d;
   max-width: 700px;

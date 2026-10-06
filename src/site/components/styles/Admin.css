@@ -15,12 +15,7 @@
 }
 [data-view="Admin"] .admin > header > span,
 [data-view="Admin"] .section-head > span {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #68706b;
 }
 [data-view="Admin"] .totals {
@@ -38,12 +33,7 @@
   background: #fffdf8;
 }
 [data-view="Admin"] .totals span {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #68706b;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -66,13 +56,13 @@
 }
 [data-view="Admin"] .engram-report .eyebrow {
   margin-bottom: 8px;
-  font-size: 10px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .report-note,
 [data-view="Admin"] .report-warning {
   padding: 0 20px;
   color: #68706b;
-  font-size: 13px;
+  font-size: 1rem;
   line-height: 1.6;
 }
 [data-view="Admin"] .report-warning {
@@ -91,7 +81,7 @@
 }
 [data-view="Admin"] .graph-totals dt {
   color: #68706b;
-  font-size: 11px;
+  font-size: 1rem;
   text-transform: uppercase;
 }
 [data-view="Admin"] .graph-totals dd {
@@ -101,7 +91,7 @@
 }
 [data-view="Admin"] .report-metadata {
   margin: 20px;
-  font-size: 12px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .report-metadata summary {
   cursor: pointer;
@@ -131,7 +121,7 @@
 [data-view="Admin"] .graph-filters label {
   display: grid;
   gap: 8px;
-  font-size: 12px;
+  font-size: 1rem;
   font-weight: 700;
   flex: 1;
   min-width: 200px;
@@ -170,11 +160,11 @@
 }
 [data-view="Admin"] .engram-visualizations h3 {
   margin: 0 0 8px;
-  font-size: 15px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .engram-visualizations p {
   color: #68706b;
-  font-size: 12px;
+  font-size: 1rem;
   line-height: 1.6;
 }
 [data-view="Admin"] .engram-visualizations svg {
@@ -204,7 +194,7 @@
 [data-view="Admin"] .graph-browser code {
   white-space: normal;
   overflow-wrap: anywhere;
-  font-size: 11px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .graph-browser td:first-child {
   min-width: 140px;
@@ -212,7 +202,7 @@
 [data-view="Admin"] .node-kind {
   display: block;
   color: #68706b;
-  font-size: 10px;
+  font-size: 1rem;
   font-weight: 400;
   margin-top: 5px;
 }
@@ -223,7 +213,7 @@
   color: #17231d;
   cursor: pointer;
   padding: 9px 12px;
-  font-size: 12px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .report-button:disabled {
   opacity: 0.45;
@@ -258,7 +248,7 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 16px;
-  font-size: 11px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .graph-pagination > div {
   display: flex;
@@ -269,7 +259,7 @@
   padding: 20px;
   border-left: 1px solid #d5d9d4;
   background: #f8f5ed;
-  font-size: 12px;
+  font-size: 1rem;
   overflow-wrap: anywhere;
 }
 [data-view="Admin"] .node-details h3 {
@@ -290,7 +280,7 @@
 }
 [data-view="Admin"] .node-details li > span {
   color: #68706b;
-  font-size: 10px;
+  font-size: 1rem;
 }
 [data-view="Admin"] .section-head {
   display: flex;
@@ -316,18 +306,13 @@
   white-space: nowrap;
 }
 [data-view="Admin"] th {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #68706b;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 [data-view="Admin"] td {
-  font-size: 13px;
+  font-size: 1rem;
 }
 [data-view="Admin"] td:first-child {
   font-weight: 700;

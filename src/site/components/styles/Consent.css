@@ -11,12 +11,7 @@
   margin: 8px 0 18px;
 }
 [data-view="Consent"] .eyebrow {
-  font:
-    11px "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem var(--font-mono);
   color: #ff5b3d;
   letter-spacing: 0.12em;
 }
@@ -26,7 +21,7 @@
 }
 [data-view="Consent"] .note {
   color: #68706b;
-  font-size: 13px;
+  font-size: 1rem;
 }
 [data-view="Consent"] .error {
   margin: 18px 0;

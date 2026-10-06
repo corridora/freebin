@@ -16,7 +16,7 @@
   display: flex;
   align-items: center;
   gap: 26px;
-  font-size: 13px;
+  font-size: 1rem;
   font-weight: 600;
 }
 [data-view="Header"] .site-links a {
@@ -36,7 +36,7 @@
 }
 [data-view="Header"] .bin-menu summary::after {
   content: " ▾";
-  font-size: 10px;
+  font-size: 1rem;
 }
 [data-view="Header"] .bin-options {
   position: absolute;
@@ -68,7 +68,7 @@
   border-top: 1px solid #d5d9d4;
 }
 [data-view="Header"] .create-bin-form label {
-  font-size: 11px;
+  font-size: 1rem;
   color: #53635a;
 }
 [data-view="Header"] .create-bin-form input {
@@ -93,7 +93,7 @@
   opacity: 0.6;
 }
 [data-view="Header"] .bin-error {
-  font-size: 11px;
+  font-size: 1rem;
   color: #b73520;
 }
 [data-view="Header"] .account-link {
@@ -117,7 +117,7 @@
   }
   [data-view="Header"] .site-links {
     gap: 13px;
-    font-size: 12px;
+    font-size: 1rem;
   }
   [data-view="Header"] .how,
   [data-view="Header"] .terms-link {

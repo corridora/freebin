@@ -7,12 +7,12 @@
 }
 [data-view="Docs"] .lede,
 [data-view="Docs"] .docs section > p {
-  font-size: 17px;
+  font-size: 1rem;
   line-height: 1.65;
   color: #68706b;
 }
 [data-view="Docs"] .lede {
-  font-size: 19px;
+  font-size: 1rem;
 }
 [data-view="Docs"] .resources {
   display: grid;
@@ -35,7 +35,7 @@
   border-color: #7a9484;
 }
 [data-view="Docs"] .resources span {
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.45;
   color: #68706b;
 }
@@ -43,11 +43,11 @@
   margin-top: 48px;
 }
 [data-view="Docs"] .docs h2 {
-  font-size: 20px;
+  font-size: 1rem;
   margin-bottom: 14px;
 }
 [data-view="Docs"] .docs h3 {
-  font-size: 17px;
+  font-size: 1rem;
   margin: 35px 0 7px;
 }
 [data-view="Docs"] .docs pre {
@@ -55,15 +55,13 @@
   color: #dce7df;
   padding: 20px;
   border-radius: 10px;
-  font:
-    13px/1.75 "DM Mono",
-    monospace;
+  font: 1rem/1.75 var(--font-mono);
   overflow: auto;
   white-space: pre;
 }
 [data-view="Docs"] .docs code {
-  font-family: "DM Mono", monospace;
-  font-size: 0.9em;
+  font-family: var(--font-mono);
+  font-size: 1rem;
 }
 [data-view="Docs"] .table-wrap {
   overflow: auto;
@@ -74,7 +72,7 @@
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  font-size: 14px;
+  font-size: 1rem;
 }
 [data-view="Docs"] th,
 [data-view="Docs"] td {
@@ -123,9 +121,7 @@
 }
 [data-view="Docs"] .method {
   flex: none;
-  font:
-    700 11px/1.5 "DM Mono",
-    monospace;
+  font: 700 1rem/1.5 var(--font-mono);
   color: #24704a;
   background: #e7f4eb;
   border-radius: 5px;
@@ -134,12 +130,12 @@
 [data-view="Docs"] .endpoint p {
   margin: 0;
   color: #4e5752;
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.45;
 }
 [data-view="Docs"] .auth {
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 1rem;
   font-weight: 700;
   color: #68706b;
   background: #f1f3f2;
@@ -165,6 +161,6 @@
     grid-template-columns: 1fr;
   }
   [data-view="Docs"] .docs pre {
-    font-size: 12px;
+    font-size: 1rem;
   }
 }

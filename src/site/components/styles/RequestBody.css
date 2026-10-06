@@ -14,7 +14,7 @@
 }
 [data-view="RequestBody"] h2 {
   margin: 0;
-  font-size: 11px;
+  font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #67706a;
@@ -24,7 +24,7 @@
   background: #fff;
   padding: 6px 9px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 1rem;
   font-weight: 700;
   color: #28352e;
 }
@@ -32,12 +32,7 @@
   opacity: 0.6;
 }
 [data-view="RequestBody"] pre {
-  font:
-    12px/1.7 "DM Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
+  font: 1rem/1.7 var(--font-mono);
   padding: 16px;
   border-radius: 8px;
   background: #17231d;
@@ -51,5 +46,5 @@
 [data-view="RequestBody"] .body-error {
   margin: 0 0 8px;
   color: #b73520;
-  font-size: 12px;
+  font-size: 1rem;
 }
