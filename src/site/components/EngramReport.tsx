@@ -1,14 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
+import EngramGraph from "./EngramGraph";
+import type { GraphNode } from "./engram-layout";
 
-type GraphNode = {
-  id: string;
-  label: string;
-  file: string;
-  location: string | null;
-  kind: string;
-  cluster: number | null;
-};
 type Snapshot = {
   available: boolean;
   scope: string;
@@ -180,6 +174,18 @@ export default function EngramReport({ report }: { report?: Snapshot }) {
               </select>
             </label>
           </div>
+          <EngramGraph
+            nodes={filtered}
+            allNodes={report.nodes}
+            relationships={report.relationships}
+            selected={selected}
+            cluster={cluster}
+            onSelect={setSelected}
+            onCluster={(value) => {
+              setCluster(value);
+              setPage(0);
+            }}
+          />
           <div className="graph-browser">
             <div>
               <div className="table-wrap">

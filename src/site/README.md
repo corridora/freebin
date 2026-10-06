@@ -155,11 +155,15 @@ Sign in with an email listed in the Worker's `ADMIN_EMAILS` and open `/admin`. T
 npm run start -- --port 8788 --var ADMIN_EMAILS:developer@example.com
 ```
 
-For Cloudflare deployments, set `ADMIN_EMAILS` in `.env`. The admin page exposes service totals, recent accounts, and an application graph report with search, cluster filters, relationship inspection, and JSON download. The backend checks the session and allowlist before returning report data.
+For Cloudflare deployments, set `ADMIN_EMAILS` in `.env`. The admin page exposes service totals, recent accounts, and an application graph report with interactive cluster and node relationship graphs, search, cluster filters, relationship inspection, and JSON download. Graph controls support mouse and keyboard selection. The node visualization shows up to 60 matching nodes, prioritizing the selected node and its neighbors; the table retains the full dataset. The cluster visualization shows the 36 largest clusters. The backend checks the session and allowlist before returning report data.
 
 Builds and development startup create a report snapshot from the repository's `.engram/graph.json`. The snapshot uses application paths and omits hidden files, runtime type declarations, dependencies, build output, its generated JSON, and relationships outside that scope. A missing graph shows an empty state; a source graph marked stale shows a warning. The report is served through authorized page data rather than public assets.
 
 After refreshing the graph, run `npm run engram:snapshot` to update the local snapshot, or rebuild for deployment. Cloudflare serves the snapshot included in that build. Snapshot timestamps and a source digest identify the graph input.
+
+GitHub Actions runs on pull requests, pushes to `main`, and manual dispatch. It installs the locked root Engram dependency and runs `npm run engram:build` from the repository root before the site checks and builds. This performs headless code extraction without an LLM key and writes `src/site/artifacts/engram/graph.json` and `GRAPH_REPORT.md`, preserving the developer's `.engram/` graph. Generated types, snapshots, browser reports, test results, coverage, dependencies, and build artifacts are excluded. The workflow uploads the graph, report, and sanitized admin snapshot as the `engram-graph` artifact.
+
+CI sets `ENGRAM_DIRECTORY` to that generated artifact directory for all subsequent snapshots and requires a non-empty application graph with `ENGRAM_REQUIRED=true`. For the same local build, run `npm ci` and `npm run engram:build` at the repository root, then `ENGRAM_DIRECTORY="$PWD/src/site/artifacts/engram" ENGRAM_REQUIRED=true npm run build`. These graphs represent code structure; semantic document extraction and assistant descriptions remain part of the interactive Engram workflow.
 
 ## Performance profiling
 

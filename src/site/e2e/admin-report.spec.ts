@@ -48,7 +48,39 @@ test("Engram reports require an admin session and support inspection and downloa
       page.getByRole("heading", { name: "Engram report" }),
     ).toBeVisible();
     const report = page.locator(".engram-report");
+    if (process.env.ENGRAM_REQUIRED === "true") {
+      expect(payload.engram.available).toBe(true);
+      expect(payload.engram.nodes.length).toBeGreaterThan(0);
+    }
     if (payload.engram.available && payload.engram.nodes.length) {
+      const graph = page.getByRole("group", {
+        name: "Engram relationship graph",
+        exact: true,
+      });
+      const clusters = page.getByRole("group", {
+        name: "Engram cluster graph",
+        exact: true,
+      });
+      await expect(graph).toBeVisible();
+      await expect(clusters).toBeVisible();
+      const graphNode = graph.getByRole("button").first();
+      await graphNode.focus();
+      await page.keyboard.press("Enter");
+      await expect(graph.getByRole("button", { pressed: true })).toHaveCount(1);
+      await expect(
+        page
+          .getByRole("complementary", { name: "Selected node relationships" })
+          .getByRole("heading"),
+      ).toBeVisible();
+      if (payload.engram.clusters.length) {
+        await clusters.getByRole("button").first().click();
+        await expect(
+          page.getByRole("combobox", { name: "Cluster", exact: true }),
+        ).not.toHaveValue("");
+        await page
+          .getByRole("combobox", { name: "Cluster", exact: true })
+          .selectOption("");
+      }
       await expect(
         page.getByRole("table", { name: "Engram nodes" }),
       ).toBeVisible();
@@ -58,6 +90,7 @@ test("Engram reports require an admin session and support inspection and downloa
       await expect(
         page.getByText("No nodes match these filters."),
       ).toBeVisible();
+      await expect(graph).toHaveCount(0);
       await page.getByLabel("Search nodes").fill("");
       const first = payload.engram.nodes[0];
       await page

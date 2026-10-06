@@ -9,7 +9,9 @@ import { resolve, dirname } from "node:path";
 import { projectRoot } from "./cloudflare-config.mjs";
 import { buildEngramReport } from "./engram-report.mjs";
 
-const directory = resolve(projectRoot, "../../.engram");
+const directory = process.env.ENGRAM_DIRECTORY
+  ? resolve(process.env.ENGRAM_DIRECTORY)
+  : resolve(projectRoot, "../../.engram");
 const graphFile = resolve(directory, "graph.json");
 function read(name) {
   const file = resolve(directory, name);
@@ -24,6 +26,12 @@ const report = buildEngramReport(read("graph.json"), {
     existsSync(resolve(directory, "needs_update")) ||
     read("branch.json")?.stale === true,
 });
+if (
+  process.env.ENGRAM_REQUIRED === "true" &&
+  (!report.available || !report.nodes.length)
+) {
+  throw new Error("Engram generation did not produce an application graph.");
+}
 const output = resolve(projectRoot, "server/generated/engram-report.json");
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, JSON.stringify(report, null, 2) + "\n");

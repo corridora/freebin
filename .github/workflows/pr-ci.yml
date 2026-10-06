@@ -3,12 +3,15 @@ name: Pull Request CI
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr-ci-${{ github.event.pull_request.number }}
+  group: pr-ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -22,6 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check diff hygiene
+        if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -30,6 +34,9 @@ jobs:
   site:
     name: Next.js and Cloudflare checks
     runs-on: ubuntu-latest
+    env:
+      ENGRAM_DIRECTORY: ${{ github.workspace }}/src/site/artifacts/engram
+      ENGRAM_REQUIRED: "true"
     defaults:
       run:
         working-directory: src/site
@@ -42,10 +49,30 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: src/site/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            src/site/package-lock.json
+
+      - name: Install pinned Engram
+        working-directory: .
+        run: npm ci
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate Engram application graph
+        working-directory: .
+        run: npm run engram:build
+
+      - name: Upload Engram graph and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: engram-graph
+          path: |
+            src/site/artifacts/engram/graph.json
+            src/site/artifacts/engram/GRAPH_REPORT.md
+            src/site/server/generated/engram-report.json
+          if-no-files-found: error
 
       - name: Generate Worker types
         run: npm run types

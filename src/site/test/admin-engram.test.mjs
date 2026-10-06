@@ -62,6 +62,12 @@ test("admin snapshot publishes only application nodes and in-scope relationships
           id: "dependency",
           source_file: "src/site/node_modules/dependency/index.js",
         },
+        {
+          id: "browser-report",
+          source_file: "src/site/playwright-report/assets/report.js",
+        },
+        { id: "test-output", source_file: "src/site/test-results/trace.js" },
+        { id: "coverage", source_file: "src/site/coverage/report.js" },
       ],
       links: [
         {
