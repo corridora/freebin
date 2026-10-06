@@ -60,7 +60,7 @@ Internal links and programmatic navigation use Next.js routing. The browser fetc
 | `/`, `/docs`, `/terms`                         | Homepage, developer documentation, and terms.                                                            |
 | `/account`                                     | Authentication, bins, API keys, collaboration, and account deletion.                                     |
 | `/bin/:id`                                     | Live request inspection, filters, exports, replay, forwarding, rules, configuration, sharing, and audit. |
-| `/demo`                                        | Public demo traffic with redaction and reduced quotas.                                                   |
+| `/demo`                                        | The bin inspector with redacted public demo data and disabled actions and mutations.                     |
 | `/shared/bin/:token`, `/shared/request/:token` | Revocable read-only views.                                                                               |
 | `/admin`                                       | Admin-only service totals, recent users, and Engram reports.                                             |
 | `/b/:id/*`                                     | Request capture with an owner API key.                                                                   |

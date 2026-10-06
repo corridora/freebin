@@ -54,6 +54,13 @@
   height: calc(100vh - 72px);
   background: #f7f5ef;
 }
+[data-view="Inspector"][data-read-only="true"]
+  :is(button, input, select, textarea):disabled,
+[data-view="Inspector"][data-read-only="true"]
+  .config-import:has(input:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 [data-view="Inspector"] .inspector-bar {
   height: 72px;
   display: grid;
