@@ -8,7 +8,7 @@ import RequestBody from "@/components/RequestBody";
 import RequestHistogram from "@/components/RequestHistogram";
 type BinView =
   "requests" | "config" | "rules" | "histogram" | "audit" | "delete";
-export default function Inspector({ data = {}, form }: any) {
+export default function Inspector({ data = {}, form, readOnly = false }: any) {
   const router = useRouter();
   const [interactions, setInteractions] = useState<any[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -346,6 +346,7 @@ export default function Inspector({ data = {}, form }: any) {
     filtersChanged();
   }
   async function refresh() {
+    if (readOnly) return data.interactions || [];
     try {
       const response = await fetch(
         `/api/v1/bins/${data.id}/interactions?limit=all`,
@@ -373,11 +374,11 @@ export default function Inspector({ data = {}, form }: any) {
     }
   }
   async function loadSettings() {
-    const response = await fetch(`/api/v1/bins/${data.id}`);
-    const result = (await response.json()) as {
+    const response = readOnly ? null : await fetch(`/api/v1/bins/${data.id}`);
+    const result = (readOnly ? { bin: data.bin } : await response!.json()) as {
       bin?: any;
     };
-    if (!response.ok || !result.bin) return;
+    if ((!readOnly && !response!.ok) || !result.bin) return;
     setResponseStatus(result.bin.responseStatus);
     setResponseBody(result.bin.responseBody);
     setResponseContentType(result.bin.responseContentType);
@@ -419,6 +420,10 @@ export default function Inspector({ data = {}, form }: any) {
     setRuleDelayMs(0);
   }
   async function loadRules() {
+    if (readOnly) {
+      setRules(data.rules || []);
+      return;
+    }
     const response = await fetch(`/api/v1/bins/${data.id}/rules`);
     const result = (await response.json()) as {
       rules?: any[];
@@ -437,6 +442,7 @@ export default function Inspector({ data = {}, form }: any) {
     setRuleDelayMs(rule.responseDelayMs);
   }
   async function saveRule() {
+    if (readOnly) return;
     setActionMessage("");
     try {
       const payload = {
@@ -471,6 +477,7 @@ export default function Inspector({ data = {}, form }: any) {
     }
   }
   async function deleteRule(rule: any) {
+    if (readOnly) return;
     if (!confirm(`Delete response rule “${rule.name}”?`)) return;
     const response = await fetch(`/api/v1/bins/${data.id}/rules/${rule.id}`, {
       method: "DELETE",
@@ -484,6 +491,7 @@ export default function Inspector({ data = {}, form }: any) {
     setActionMessage("Response rule deleted");
   }
   async function moveRule(index: number, direction: number) {
+    if (readOnly) return;
     const target = index + direction;
     if (target < 0 || target >= rules.length) return;
     const ordered = [...rules];
@@ -497,6 +505,7 @@ export default function Inspector({ data = {}, form }: any) {
     else setActionMessage("Could not reorder rules");
   }
   async function testRules() {
+    if (readOnly) return;
     try {
       const response = await fetch(`/api/v1/bins/${data.id}/rules/test`, {
         method: "POST",
@@ -523,6 +532,7 @@ export default function Inspector({ data = {}, form }: any) {
     }
   }
   async function saveSettings() {
+    if (readOnly) return;
     setSavingSettings(true);
     setActionMessage("");
     try {
@@ -568,6 +578,7 @@ export default function Inspector({ data = {}, form }: any) {
     }
   }
   async function exportJson() {
+    if (readOnly) return;
     setActionMessage("");
     const response = await fetch(`/api/v1/bins/${data.id}/export`);
     if (!response.ok) {
@@ -582,6 +593,7 @@ export default function Inspector({ data = {}, form }: any) {
     URL.revokeObjectURL(link.href);
   }
   async function exportConfig() {
+    if (readOnly) return;
     setActionMessage("");
     const response = await fetch(`/api/v1/bins/${data.id}/config`);
     if (!response.ok) {
@@ -596,6 +608,7 @@ export default function Inspector({ data = {}, form }: any) {
     URL.revokeObjectURL(link.href);
   }
   async function importConfig(event: any) {
+    if (readOnly) return;
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -674,6 +687,7 @@ export default function Inspector({ data = {}, form }: any) {
     setCurlCopied(false);
   }
   async function loadReplayAttempts(requestId: string) {
+    if (readOnly) return;
     const response = await fetch(
       `/api/v1/bins/${data.id}/interactions/${requestId}/replay`,
     );
@@ -689,6 +703,10 @@ export default function Inspector({ data = {}, form }: any) {
     setActionMessage("");
   }
   async function loadAudit() {
+    if (readOnly) {
+      setAuditEvents(data.auditEvents || []);
+      return;
+    }
     try {
       const response = await fetch(`/api/v1/bins/${data.id}/audit?limit=100`);
       const result = (await response.json()) as {
@@ -705,6 +723,7 @@ export default function Inspector({ data = {}, form }: any) {
     }
   }
   async function loadForwardAttempts(requestId: string) {
+    if (readOnly) return;
     const response = await fetch(
       `/api/v1/bins/${data.id}/interactions/${requestId}/forwarding`,
     );
@@ -714,6 +733,7 @@ export default function Inspector({ data = {}, form }: any) {
     setForwardAttempts(response.ok ? result.attempts || [] : []);
   }
   async function replay(item: any) {
+    if (readOnly) return;
     setActionMessage("");
     setReplayBusy(true);
     let queryInput: Record<string, string | string[]>;
@@ -794,11 +814,13 @@ export default function Inspector({ data = {}, form }: any) {
     return parts.join(" \\\n");
   }
   async function copyCurl() {
+    if (readOnly) return;
     await navigator.clipboard.writeText(curlCommand());
     setCurlCopied(true);
     setTimeout(() => setCurlCopied(false), 1200);
   }
   async function exportRequest(item: any) {
+    if (readOnly) return;
     setActionMessage("");
     const response = await fetch(
       `/api/v1/bins/${data.id}/interactions/${item.id}/export`,
@@ -815,6 +837,7 @@ export default function Inspector({ data = {}, form }: any) {
     URL.revokeObjectURL(link.href);
   }
   function toggleSelection(id: string) {
+    if (readOnly) return;
     setSelectedIds(
       selectedIds.includes(id)
         ? selectedIds.filter((selectedId) => selectedId !== id)
@@ -822,6 +845,7 @@ export default function Inspector({ data = {}, form }: any) {
     );
   }
   function togglePageSelection() {
+    if (readOnly) return;
     const pageIds = pagedInteractions.map((item) => String(item.id));
     setSelectedIds(
       pageIsSelected
@@ -830,6 +854,7 @@ export default function Inspector({ data = {}, form }: any) {
     );
   }
   function exportSelected() {
+    if (readOnly) return;
     const requests = interactions.filter((item) =>
       selectedIds.includes(item.id),
     );
@@ -853,6 +878,7 @@ export default function Inspector({ data = {}, form }: any) {
     );
   }
   async function deleteSelected() {
+    if (readOnly) return;
     const ids = [...selectedIds];
     if (
       !ids.length ||
@@ -891,6 +917,7 @@ export default function Inspector({ data = {}, form }: any) {
     setBulkBusy(false);
   }
   async function runBulkEgress(operation: "replay" | "forward") {
+    if (readOnly) return;
     const selected = interactions.filter((item) =>
       selectedIds.includes(item.id),
     );
@@ -969,6 +996,7 @@ export default function Inspector({ data = {}, form }: any) {
     setBulkBusy(false);
   }
   async function toggleBinShare() {
+    if (readOnly) return;
     const response = await fetch(`/api/v1/bins/${data.id}/share`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -991,6 +1019,7 @@ export default function Inspector({ data = {}, form }: any) {
     } else setActionMessage("Public bin link revoked");
   }
   async function toggleRequestShare(item: any) {
+    if (readOnly) return;
     const response = await fetch(
       `/api/v1/bins/${data.id}/interactions/${item.id}/share`,
       {
@@ -1026,6 +1055,7 @@ export default function Inspector({ data = {}, form }: any) {
       : "";
   }
   async function deleteRequest(item: any) {
+    if (readOnly) return;
     if (!confirm("Delete this captured request? This cannot be undone."))
       return;
     const response = await fetch(
@@ -1046,6 +1076,7 @@ export default function Inspector({ data = {}, form }: any) {
     setActionMessage("Request deleted");
   }
   async function deleteBin() {
+    if (readOnly) return;
     if (!binName || deleteConfirmation !== binName || deletingBin) return;
     setDeletingBin(true);
     setActionMessage("");
@@ -1075,6 +1106,7 @@ export default function Inspector({ data = {}, form }: any) {
     void Promise.all([loadReplayAttempts(id), loadForwardAttempts(id)]);
   }
   async function copy() {
+    if (readOnly) return;
     await navigator.clipboard.writeText(endpoint);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
@@ -1112,6 +1144,15 @@ export default function Inspector({ data = {}, form }: any) {
     };
   }, [settingsMenuOpen]);
   useEffect(() => {
+    if (!readOnly) return;
+    setInteractions(data.interactions || []);
+    void loadSettings();
+    void loadRules();
+    setAuditEvents(data.auditEvents || []);
+    setLoading(false);
+  }, [readOnly, data]);
+  useEffect(() => {
+    if (readOnly) return;
     let stopped = false;
     let stream: EventSource | undefined;
     let polling: ReturnType<typeof setInterval> | undefined;
@@ -1137,7 +1178,7 @@ export default function Inspector({ data = {}, form }: any) {
       stream?.close();
       if (polling) clearInterval(polling);
     };
-  }, [data.id]);
+  }, [data.id, readOnly]);
   useEffect(() => {
     if (!loading && currentPage > totalPages) setCurrentPage(totalPages);
   }, [loading, currentPage, totalPages]);
@@ -1165,16 +1206,18 @@ export default function Inspector({ data = {}, form }: any) {
     currentPage,
   ]);
   return (
-    <div data-view="Inspector">
+    <div data-view="Inspector" data-read-only={readOnly || undefined}>
       <title>
-        {binName || `Bin ${data.id}`}
+        {readOnly ? "Public Demo" : binName || `Bin ${data.id}`}
         {" | freebin.org"}
       </title>
       <div className="app">
         <div className="inspector-bar">
           <div className="endpoint mono">
             <span>{endpoint}</span>
-            <button onClick={copy}>{copied ? "Copied!" : "Copy"}</button>
+            <button disabled={readOnly} onClick={copy}>
+              {copied ? "Copied!" : "Copy"}
+            </button>
           </div>
           <span className="live">
             <i></i>
@@ -1193,7 +1236,7 @@ export default function Inspector({ data = {}, form }: any) {
                 </span>
               </strong>
               <div className="top-actions">
-                <button onClick={toggleBinShare}>
+                <button disabled={readOnly} onClick={toggleBinShare}>
                   {binPublicShareToken ? "Unshare bin" : "Share bin"}
                 </button>
                 <div
@@ -1236,10 +1279,14 @@ export default function Inspector({ data = {}, form }: any) {
                     </div>
                   ) : null}
                 </div>
-                <button onClick={exportJson} disabled={!interactions.length}>
+                <button
+                  onClick={exportJson}
+                  disabled={readOnly || !interactions.length}
+                >
                   {"Export bin data"}
                 </button>
                 <button
+                  disabled={readOnly}
                   onClick={refresh}
                   aria-label="Refresh requests"
                   className="refresh"
@@ -1423,6 +1470,7 @@ export default function Inspector({ data = {}, form }: any) {
                     <div className="bulk-actions">
                       <label>
                         <input
+                          disabled={readOnly}
                           type="checkbox"
                           checked={pageIsSelected}
                           onChange={togglePageSelection}
@@ -1437,7 +1485,7 @@ export default function Inspector({ data = {}, form }: any) {
                         type="url"
                         placeholder="Bulk replay HTTPS origin"
                         aria-label="Bulk replay destination"
-                        disabled={bulkBusy}
+                        disabled={readOnly || bulkBusy}
                         value={bulkReplayUrl ?? ""}
                         onChange={(event) => {
                           setBulkReplayUrl(event.currentTarget.value);
@@ -1446,7 +1494,10 @@ export default function Inspector({ data = {}, form }: any) {
                       <button
                         onClick={() => runBulkEgress("replay")}
                         disabled={
-                          !selectedIds.length || !bulkReplayUrl || bulkBusy
+                          readOnly ||
+                          !selectedIds.length ||
+                          !bulkReplayUrl ||
+                          bulkBusy
                         }
                       >
                         {"Replay selected"}
@@ -1454,27 +1505,30 @@ export default function Inspector({ data = {}, form }: any) {
                       <button
                         onClick={() => runBulkEgress("forward")}
                         disabled={
-                          !selectedIds.length || !forwardingEnabled || bulkBusy
+                          readOnly ||
+                          !selectedIds.length ||
+                          !forwardingEnabled ||
+                          bulkBusy
                         }
                       >
                         {"Forward selected"}
                       </button>
                       <button
                         onClick={exportSelected}
-                        disabled={!selectedIds.length || bulkBusy}
+                        disabled={readOnly || !selectedIds.length || bulkBusy}
                       >
                         {"Export selected"}
                       </button>
                       <button
                         onClick={deleteSelected}
-                        disabled={!selectedIds.length || bulkBusy}
+                        disabled={readOnly || !selectedIds.length || bulkBusy}
                         className="danger"
                       >
                         {bulkBusy ? "Working…" : "Delete selected"}
                       </button>
                       <button
                         onClick={() => setSelectedIds([])}
-                        disabled={!selectedIds.length || bulkBusy}
+                        disabled={readOnly || !selectedIds.length || bulkBusy}
                       >
                         {"Clear"}
                       </button>
@@ -1556,7 +1610,9 @@ export default function Inspector({ data = {}, form }: any) {
                         }
                       </p>
                     </div>
-                    <button onClick={resetRuleForm}>{"New rule"}</button>
+                    <button disabled={readOnly} onClick={resetRuleForm}>
+                      {"New rule"}
+                    </button>
                   </div>
                   {rules.length ? (
                     <>
@@ -1587,21 +1643,27 @@ export default function Inspector({ data = {}, form }: any) {
                               <button
                                 aria-label="Move rule up"
                                 onClick={() => moveRule(index, -1)}
-                                disabled={index === 0}
+                                disabled={readOnly || index === 0}
                               >
                                 {"↑"}
                               </button>
                               <button
                                 aria-label="Move rule down"
                                 onClick={() => moveRule(index, 1)}
-                                disabled={index === rules.length - 1}
+                                disabled={
+                                  readOnly || index === rules.length - 1
+                                }
                               >
                                 {"↓"}
                               </button>
-                              <button onClick={() => editRule(rule)}>
+                              <button
+                                disabled={readOnly}
+                                onClick={() => editRule(rule)}
+                              >
                                 {"Edit"}
                               </button>
                               <button
+                                disabled={readOnly}
                                 onClick={() => deleteRule(rule)}
                                 className="danger"
                               >
@@ -1634,6 +1696,7 @@ export default function Inspector({ data = {}, form }: any) {
                       <label>
                         {"Name"}
                         <input
+                          disabled={readOnly}
                           maxLength={80}
                           required
                           placeholder="Successful checkout"
@@ -1645,6 +1708,7 @@ export default function Inspector({ data = {}, form }: any) {
                       </label>
                       <label className="rule-toggle">
                         <input
+                          disabled={readOnly}
                           type="checkbox"
                           checked={ruleEnabled}
                           onChange={(event) => {
@@ -1657,6 +1721,7 @@ export default function Inspector({ data = {}, form }: any) {
                     <label>
                       {"Conditions (JSON; 1–5, all must match)"}
                       <textarea
+                        disabled={readOnly}
                         rows={7}
                         value={ruleConditions ?? ""}
                         onChange={(event) => {
@@ -1673,6 +1738,7 @@ export default function Inspector({ data = {}, form }: any) {
                       <label>
                         {"Status"}
                         <input
+                          disabled={readOnly}
                           type="number"
                           min="200"
                           max="599"
@@ -1685,6 +1751,7 @@ export default function Inspector({ data = {}, form }: any) {
                       <label>
                         {"Delay (ms)"}
                         <input
+                          disabled={readOnly}
                           type="number"
                           min="0"
                           max="5000"
@@ -1697,6 +1764,7 @@ export default function Inspector({ data = {}, form }: any) {
                       <label>
                         {"Content type"}
                         <input
+                          disabled={readOnly}
                           maxLength={500}
                           value={ruleContentType ?? ""}
                           onChange={(event) => {
@@ -1708,6 +1776,7 @@ export default function Inspector({ data = {}, form }: any) {
                     <label>
                       {"Response headers (JSON)"}
                       <textarea
+                        disabled={readOnly}
                         rows={3}
                         value={ruleHeaders ?? ""}
                         onChange={(event) => {
@@ -1718,6 +1787,7 @@ export default function Inspector({ data = {}, form }: any) {
                     <label>
                       {"Response body"}
                       <textarea
+                        disabled={readOnly}
                         rows={5}
                         value={ruleBody ?? ""}
                         onChange={(event) => {
@@ -1726,12 +1796,16 @@ export default function Inspector({ data = {}, form }: any) {
                       ></textarea>
                     </label>
                     <div className="rule-editor-actions">
-                      <button className="save">
+                      <button disabled={readOnly} className="save">
                         {editingRuleId ? "Update rule" : "Create rule"}
                       </button>
                       {editingRuleId ? (
                         <>
-                          <button type="button" onClick={resetRuleForm}>
+                          <button
+                            disabled={readOnly}
+                            type="button"
+                            onClick={resetRuleForm}
+                          >
                             {"Cancel"}
                           </button>
                         </>
@@ -1741,13 +1815,16 @@ export default function Inspector({ data = {}, form }: any) {
                   <div className="rule-tester">
                     <h3>{"Rule tester"}</h3>
                     <textarea
+                      disabled={readOnly}
                       rows={8}
                       value={ruleTestInput ?? ""}
                       onChange={(event) => {
                         setRuleTestInput(event.currentTarget.value);
                       }}
                     ></textarea>
-                    <button onClick={testRules}>{"Test enabled rules"}</button>
+                    <button disabled={readOnly} onClick={testRules}>
+                      {"Test enabled rules"}
+                    </button>
                   </div>
                 </section>
               </>
@@ -1815,10 +1892,13 @@ export default function Inspector({ data = {}, form }: any) {
             {binView === "config" ? (
               <>
                 <div className="config-actions">
-                  <button onClick={exportConfig}>{"Export config"}</button>
+                  <button disabled={readOnly} onClick={exportConfig}>
+                    {"Export config"}
+                  </button>
                   <label className="config-import">
                     {"Import config"}
                     <input
+                      disabled={readOnly}
                       type="file"
                       accept="application/json,.json"
                       onChange={importConfig}
@@ -1836,6 +1916,7 @@ export default function Inspector({ data = {}, form }: any) {
                     <label>
                       {"Status"}
                       <input
+                        disabled={readOnly}
                         type="number"
                         min="100"
                         max="599"
@@ -1852,6 +1933,7 @@ export default function Inspector({ data = {}, form }: any) {
                         {"/500 bytes"}
                       </span>
                       <input
+                        disabled={readOnly}
                         maxLength={500}
                         value={responseContentType ?? ""}
                         onChange={(event) => {
@@ -1867,6 +1949,7 @@ export default function Inspector({ data = {}, form }: any) {
                       {"/500 bytes"}
                     </span>
                     <textarea
+                      disabled={readOnly}
                       maxLength={500}
                       rows={4}
                       value={responseHeaders ?? ""}
@@ -1882,6 +1965,7 @@ export default function Inspector({ data = {}, form }: any) {
                       {"/500 bytes"}
                     </span>
                     <textarea
+                      disabled={readOnly}
                       maxLength={500}
                       rows={6}
                       value={responseBody ?? ""}
@@ -1894,6 +1978,7 @@ export default function Inspector({ data = {}, form }: any) {
                     <legend>{"Automatic forwarding"}</legend>
                     <label className="forwarding-toggle">
                       <input
+                        disabled={readOnly}
                         type="checkbox"
                         checked={forwardingEnabled}
                         onChange={(event) => {
@@ -1908,7 +1993,7 @@ export default function Inspector({ data = {}, form }: any) {
                         type="url"
                         maxLength={2000}
                         placeholder="https://api.example.com/webhooks"
-                        disabled={!forwardingEnabled}
+                        disabled={readOnly || !forwardingEnabled}
                         value={forwardingUrl ?? ""}
                         onChange={(event) => {
                           setForwardingUrl(event.currentTarget.value);
@@ -1919,7 +2004,7 @@ export default function Inspector({ data = {}, form }: any) {
                       {"Auth headers to retain (comma-separated)"}
                       <input
                         placeholder="stripe-signature, x-api-key"
-                        disabled={!forwardingEnabled}
+                        disabled={readOnly || !forwardingEnabled}
                         value={forwardingAuthHeaders ?? ""}
                         onChange={(event) => {
                           setForwardingAuthHeaders(event.currentTarget.value);
@@ -1943,7 +2028,7 @@ export default function Inspector({ data = {}, form }: any) {
                             <label>
                               {"Request field"}
                               <select
-                                disabled={!forwardingEnabled}
+                                disabled={readOnly || !forwardingEnabled}
                                 value={condition.source ?? ""}
                                 onChange={(event) => {
                                   const value = event.currentTarget.value;
@@ -1982,7 +2067,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           ? "x-event"
                                           : "event"
                                     }
-                                    disabled={!forwardingEnabled}
+                                    disabled={readOnly || !forwardingEnabled}
                                     required
                                     value={condition.key ?? ""}
                                     onChange={(event) => {
@@ -2002,7 +2087,7 @@ export default function Inspector({ data = {}, form }: any) {
                             <label>
                               {"Match"}
                               <select
-                                disabled={!forwardingEnabled}
+                                disabled={readOnly || !forwardingEnabled}
                                 value={condition.operator ?? ""}
                                 onChange={(event) => {
                                   const value = event.currentTarget.value;
@@ -2034,7 +2119,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           ? "/webhooks/*"
                                           : "invoice.created"
                                     }
-                                    disabled={!forwardingEnabled}
+                                    disabled={readOnly || !forwardingEnabled}
                                     value={condition.value ?? ""}
                                     onChange={(event) => {
                                       const value = event.currentTarget.value;
@@ -2052,7 +2137,7 @@ export default function Inspector({ data = {}, form }: any) {
                             ) : null}
                             <button
                               type="button"
-                              disabled={!forwardingEnabled}
+                              disabled={readOnly || !forwardingEnabled}
                               onClick={() =>
                                 setForwardingConditions((previous) =>
                                   previous.filter((_, i) => i !== index),
@@ -2067,7 +2152,9 @@ export default function Inspector({ data = {}, form }: any) {
                       <button
                         type="button"
                         disabled={
-                          !forwardingEnabled || forwardingConditions.length >= 5
+                          readOnly ||
+                          !forwardingEnabled ||
+                          forwardingConditions.length >= 5
                         }
                         onClick={() =>
                           setForwardingConditions((previous) => [
@@ -2101,7 +2188,10 @@ export default function Inspector({ data = {}, form }: any) {
                       }
                     </p>
                   </fieldset>
-                  <button disabled={savingSettings} className="save">
+                  <button
+                    disabled={readOnly || savingSettings}
+                    className="save"
+                  >
                     {savingSettings ? "Saving…" : "Save settings"}
                   </button>
                 </form>
@@ -2130,7 +2220,7 @@ export default function Inspector({ data = {}, form }: any) {
                   autoComplete="off"
                   spellCheck={false}
                   value={deleteConfirmation}
-                  disabled={!binName || deletingBin}
+                  disabled={readOnly || !binName || deletingBin}
                   onChange={(event) =>
                     setDeleteConfirmation(event.currentTarget.value)
                   }
@@ -2138,7 +2228,10 @@ export default function Inspector({ data = {}, form }: any) {
                 <button
                   className="danger"
                   disabled={
-                    !binName || deleteConfirmation !== binName || deletingBin
+                    readOnly ||
+                    !binName ||
+                    deleteConfirmation !== binName ||
+                    deletingBin
                   }
                 >
                   {deletingBin ? "Deleting…" : "Delete bin"}
@@ -2192,6 +2285,7 @@ export default function Inspector({ data = {}, form }: any) {
                                   .join(" ")}
                               >
                                 <input
+                                  disabled={readOnly}
                                   type="checkbox"
                                   checked={selectedIds.includes(item.id)}
                                   aria-label={`Select ${item.method} ${item.path}`}
@@ -2305,6 +2399,7 @@ export default function Inspector({ data = {}, form }: any) {
                                         </section>
                                         <section className="body">
                                           <RequestBody
+                                            readOnly={readOnly}
                                             body={item.body}
                                             headers={item.headers}
                                           ></RequestBody>
@@ -2321,6 +2416,7 @@ export default function Inspector({ data = {}, form }: any) {
                                             </p>
                                           </div>
                                           <button
+                                            disabled={readOnly}
                                             onClick={() =>
                                               initializeReplay(item)
                                             }
@@ -2334,6 +2430,7 @@ export default function Inspector({ data = {}, form }: any) {
                                               {"Destination HTTPS origin"}
                                             </span>
                                             <input
+                                              disabled={readOnly}
                                               type="url"
                                               placeholder="https://api.example.com"
                                               value={replayUrl ?? ""}
@@ -2347,6 +2444,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           <label>
                                             {"Method"}
                                             <input
+                                              disabled={readOnly}
                                               maxLength={32}
                                               value={replayMethod ?? ""}
                                               onChange={(event) => {
@@ -2359,6 +2457,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           <label>
                                             {"Path"}
                                             <input
+                                              disabled={readOnly}
                                               placeholder="/webhooks"
                                               value={replayPath ?? ""}
                                               onChange={(event) => {
@@ -2373,6 +2472,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           <label>
                                             {"Query (JSON)"}
                                             <textarea
+                                              disabled={readOnly}
                                               rows={6}
                                               value={replayQuery ?? ""}
                                               onChange={(event) => {
@@ -2385,6 +2485,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           <label>
                                             {"Headers (JSON)"}
                                             <textarea
+                                              disabled={readOnly}
                                               rows={6}
                                               value={replayHeaders ?? ""}
                                               onChange={(event) => {
@@ -2397,6 +2498,7 @@ export default function Inspector({ data = {}, form }: any) {
                                           <label className="replay-body">
                                             {"Body"}
                                             <textarea
+                                              disabled={readOnly}
                                               rows={7}
                                               value={replayBody ?? ""}
                                               onChange={(event) => {
@@ -2410,7 +2512,10 @@ export default function Inspector({ data = {}, form }: any) {
                                         <div className="curl-preview">
                                           <div>
                                             <strong>{"Generated curl"}</strong>
-                                            <button onClick={copyCurl}>
+                                            <button
+                                              disabled={readOnly}
+                                              onClick={copyCurl}
+                                            >
                                               {curlCopied
                                                 ? "Copied!"
                                                 : "Copy curl"}
@@ -2421,18 +2526,24 @@ export default function Inspector({ data = {}, form }: any) {
                                         <div className="replay-actions">
                                           <button
                                             onClick={() => replay(item)}
-                                            disabled={!replayUrl || replayBusy}
+                                            disabled={
+                                              readOnly ||
+                                              !replayUrl ||
+                                              replayBusy
+                                            }
                                           >
                                             {replayBusy
                                               ? "Replaying…"
                                               : "Replay edited request"}
                                           </button>
                                           <button
+                                            disabled={readOnly}
                                             onClick={() => exportRequest(item)}
                                           >
                                             {"Export request"}
                                           </button>
                                           <button
+                                            disabled={readOnly}
                                             onClick={() =>
                                               toggleRequestShare(item)
                                             }
@@ -2442,6 +2553,7 @@ export default function Inspector({ data = {}, form }: any) {
                                               : "Share request"}
                                           </button>
                                           <button
+                                            disabled={readOnly}
                                             onClick={() => deleteRequest(item)}
                                             className="danger"
                                           >

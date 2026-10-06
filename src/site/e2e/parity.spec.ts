@@ -270,7 +270,7 @@ test("demo traffic is redacted and anonymous capture is denied", async ({
   });
   expect(demo.ok()).toBeTruthy();
   await page.goto("/demo");
-  await expect(page.locator(".demo-list")).toContainText("/redaction");
+  await expect(page.locator(".request-list")).toContainText("/redaction");
   const data = await request.get("/api/ui/page?path=%2Fdemo");
   expect(JSON.stringify(await data.json())).not.toContain("sensitive-fixture");
 });

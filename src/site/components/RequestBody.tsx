@@ -12,6 +12,7 @@ export default function RequestBody({
   body,
   headers = {},
   form,
+  readOnly = false,
 }: any) {
   const compressedBodyPrefix = "freebin:base64:";
   const [decompressed, setDecompressed] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export default function RequestBody({
     }
   }
   async function showDecompressed() {
+    if (readOnly) return;
     if (decompressed !== null) {
       setShowingDecompressed(true);
       return;
@@ -66,6 +68,7 @@ export default function RequestBody({
     }
   }
   async function copyBody() {
+    if (readOnly) return;
     if (!displayedBody) return;
     await navigator.clipboard.writeText(displayedBody);
     setCopied(true);
@@ -81,6 +84,7 @@ export default function RequestBody({
               {showingDecompressed ? (
                 <>
                   <button
+                    disabled={readOnly}
                     type="button"
                     onClick={() => setShowingDecompressed(false)}
                   >
@@ -92,7 +96,7 @@ export default function RequestBody({
                   <button
                     type="button"
                     onClick={showDecompressed}
-                    disabled={loading}
+                    disabled={readOnly || loading}
                   >
                     {loading ? "Decompressing…" : "Show decompressed"}
                   </button>
@@ -103,7 +107,7 @@ export default function RequestBody({
           <button
             type="button"
             onClick={copyBody}
-            disabled={!displayedBody}
+            disabled={readOnly || !displayedBody}
             aria-label="Copy request body"
           >
             {copied ? "Copied!" : "Copy body"}
