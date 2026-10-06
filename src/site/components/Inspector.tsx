@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { invalidateAll } from "@/components/AppShell";
 import "./styles/Inspector.css";
 import RequestBody from "@/components/RequestBody";
+import RequestHistogram from "@/components/RequestHistogram";
+type BinView =
+  "requests" | "config" | "rules" | "histogram" | "audit" | "delete";
 export default function Inspector({ data = {}, form }: any) {
   const router = useRouter();
   const [interactions, setInteractions] = useState<any[]>([]);
@@ -40,9 +43,13 @@ export default function Inspector({ data = {}, form }: any) {
       detail: string;
     }>
   >([]);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showRules, setShowRules] = useState(false);
-  const [showAudit, setShowAudit] = useState(false);
+  const [binView, setBinView] = useState<BinView>("requests");
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const settingsMenu = useRef<HTMLDivElement | null>(null);
+  const settingsButton = useRef<HTMLButtonElement | null>(null);
+  const viewHeading = useRef<HTMLHeadingElement | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deletingBin, setDeletingBin] = useState(false);
   const [auditEvents, setAuditEvents] = useState<any[]>([]);
   const [savingSettings, setSavingSettings] = useState(false);
   const [responseStatus, setResponseStatus] = useState(200);
@@ -552,7 +559,6 @@ export default function Inspector({ data = {}, form }: any) {
       if (!response.ok)
         throw new Error(result.error || "Could not save response");
       setActionMessage("Bin settings saved");
-      setShowSettings(false);
     } catch (cause) {
       setActionMessage(
         cause instanceof Error ? cause.message : "Could not save response",
@@ -676,17 +682,27 @@ export default function Inspector({ data = {}, form }: any) {
     };
     setReplayAttempts(response.ok ? result.attempts || [] : []);
   }
-  async function toggleAudit() {
-    const nextShowAudit = !showAudit;
-    setShowAudit(nextShowAudit);
-    if (!nextShowAudit) return;
-    const response = await fetch(`/api/v1/bins/${data.id}/audit?limit=100`);
-    const result = (await response.json()) as {
-      events?: any[];
-      error?: string;
-    };
-    if (response.ok) setAuditEvents(result.events || []);
-    else setActionMessage(result.error || "Could not load audit history");
+  function openBinView(view: BinView) {
+    setBinView(view);
+    setSettingsMenuOpen(false);
+    setDeleteConfirmation("");
+    setActionMessage("");
+  }
+  async function loadAudit() {
+    try {
+      const response = await fetch(`/api/v1/bins/${data.id}/audit?limit=100`);
+      const result = (await response.json()) as {
+        events?: any[];
+        error?: string;
+      };
+      if (!response.ok)
+        throw new Error(result.error || "Could not load audit history");
+      setAuditEvents(result.events || []);
+    } catch (cause) {
+      setActionMessage(
+        cause instanceof Error ? cause.message : "Could not load audit history",
+      );
+    }
   }
   async function loadForwardAttempts(requestId: string) {
     const response = await fetch(
@@ -1030,19 +1046,23 @@ export default function Inspector({ data = {}, form }: any) {
     setActionMessage("Request deleted");
   }
   async function deleteBin() {
-    if (
-      !confirm(
-        "Delete this bin and every captured request? This cannot be undone.",
-      )
-    )
-      return;
-    const response = await fetch(`/api/v1/bins/${data.id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
+    if (!binName || deleteConfirmation !== binName || deletingBin) return;
+    setDeletingBin(true);
+    setActionMessage("");
+    try {
+      const response = await fetch(`/api/v1/bins/${data.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Could not delete this bin");
       await invalidateAll();
       router.push("/");
-    } else setActionMessage("Could not delete this bin");
+    } catch (cause) {
+      setActionMessage(
+        cause instanceof Error ? cause.message : "Could not delete this bin",
+      );
+    } finally {
+      setDeletingBin(false);
+    }
   }
   function toggleDetails(id: string) {
     if (expandedId === id) {
@@ -1062,6 +1082,35 @@ export default function Inspector({ data = {}, form }: any) {
   const refreshLive = useEffectEvent(() => {
     void refresh();
   });
+  useEffect(() => {
+    setBinView("requests");
+    setSettingsMenuOpen(false);
+    setDeleteConfirmation("");
+    setBinName("");
+  }, [data.id]);
+  useEffect(() => {
+    if (binView !== "requests") viewHeading.current?.focus();
+    if (binView === "audit") void loadAudit();
+  }, [binView, data.id]);
+  useEffect(() => {
+    if (!settingsMenuOpen) return;
+    function dismiss(event: PointerEvent) {
+      if (!settingsMenu.current?.contains(event.target as Node))
+        setSettingsMenuOpen(false);
+    }
+    function escape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSettingsMenuOpen(false);
+        settingsButton.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [settingsMenuOpen]);
   useEffect(() => {
     let stopped = false;
     let stream: EventSource | undefined;
@@ -1137,37 +1186,58 @@ export default function Inspector({ data = {}, form }: any) {
             <div className="aside-title">
               <strong>
                 {"Requests "}
-                <span>{filteredInteractions.length}</span>
+                <span>
+                  {binView === "histogram"
+                    ? interactions.length
+                    : filteredInteractions.length}
+                </span>
               </strong>
               <div className="top-actions">
                 <button onClick={toggleBinShare}>
                   {binPublicShareToken ? "Unshare bin" : "Share bin"}
                 </button>
-                <button onClick={() => setShowRules(!showRules)}>
-                  {"Response rules "}
-                  <span>
-                    {rules.length}
-                    {"/10"}
-                  </span>
-                </button>
-                <button onClick={() => setShowSettings(!showSettings)}>
-                  {"Bin settings"}
-                </button>
-                <button onClick={toggleAudit}>{"Audit history"}</button>
-                <button onClick={exportConfig}>{"Export config"}</button>
-                <label className="config-import">
-                  {"Import config"}
-                  <input
-                    type="file"
-                    accept="application/json,.json"
-                    onChange={importConfig}
-                  />
-                </label>
+                <div
+                  ref={settingsMenu}
+                  className="settings-dropdown"
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget))
+                      setSettingsMenuOpen(false);
+                  }}
+                >
+                  <button
+                    ref={settingsButton}
+                    aria-expanded={settingsMenuOpen}
+                    aria-controls="bin-settings-options"
+                    onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
+                  >
+                    {"Bin settings"}
+                    <span aria-hidden="true">{" ▾"}</span>
+                  </button>
+                  {settingsMenuOpen ? (
+                    <div id="bin-settings-options" className="settings-options">
+                      <button onClick={() => openBinView("config")}>
+                        {"Config"}
+                      </button>
+                      <button onClick={() => openBinView("rules")}>
+                        {`Response rules ${rules.length}/10`}
+                      </button>
+                      <button onClick={() => openBinView("histogram")}>
+                        {"Request histogram"}
+                      </button>
+                      <button onClick={() => openBinView("audit")}>
+                        {"Audit history"}
+                      </button>
+                      <button
+                        onClick={() => openBinView("delete")}
+                        className="danger"
+                      >
+                        {"Delete"}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
                 <button onClick={exportJson} disabled={!interactions.length}>
-                  {"Export all"}
-                </button>
-                <button onClick={deleteBin} className="danger">
-                  {"Delete"}
+                  {"Export bin data"}
                 </button>
                 <button
                   onClick={refresh}
@@ -1178,265 +1248,291 @@ export default function Inspector({ data = {}, form }: any) {
                 </button>
               </div>
             </div>
-            <div className="filters">
-              <label>
-                <span className="sr-only">{"Search requests"}</span>
-                <input
-                  value={query}
-                  type="search"
-                  placeholder="Search path, headers, or body…"
-                  onChange={searchChanged}
-                />
-              </label>
-              <label>
-                <span className="sr-only">{"Filter by method"}</span>
-                <select value={methodFilter} onChange={methodChanged}>
-                  <option value="ALL">{"All methods"}</option>
-                  {methods.map((method, _index0) => (
-                    <Fragment key={_index0}>
-                      <option value={method}>{method}</option>
-                    </Fragment>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span className="sr-only">{"Requests per page"}</span>
-                <select
-                  value={pageSize}
-                  aria-label="Requests per page"
-                  onChange={pageSizeSelected}
-                >
-                  <option value="10">{"10 per page"}</option>
-                  <option value="25">{"25 per page"}</option>
-                  <option value="50">{"50 per page"}</option>
-                  <option value="all">{"All"}</option>
-                </select>
-              </label>
-            </div>
-            <div className="filter-tools">
-              <button
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                aria-expanded={showAdvancedFilters}
-              >
-                {"Advanced filters"}
-                {advancedFilterCount ? ` · ${advancedFilterCount}` : ""}
-              </button>
-              {advancedFilterCount ? (
-                <>
-                  <button onClick={clearAdvancedFilters}>
-                    {"Clear advanced"}
-                  </button>
-                </>
-              ) : null}
-            </div>
-            {showAdvancedFilters ? (
-              <>
-                <section
-                  aria-label="Advanced request filters"
-                  className="advanced-filters"
-                >
-                  <label>
-                    {"Captured from"}
-                    <input
-                      type="datetime-local"
-                      value={timeFrom ?? ""}
-                      onChange={(event) => {
-                        setTimeFrom(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"Captured to"}
-                    <input
-                      type="datetime-local"
-                      value={timeTo ?? ""}
-                      onChange={(event) => {
-                        setTimeTo(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"Path contains"}
-                    <input
-                      placeholder="/webhooks/stripe"
-                      value={pathFilter ?? ""}
-                      onChange={(event) => {
-                        setPathFilter(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"Content type contains"}
-                    <input
-                      placeholder="application/json"
-                      value={contentTypeFilter ?? ""}
-                      onChange={(event) => {
-                        setContentTypeFilter(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"Header name"}
-                    <input
-                      placeholder="x-event-type"
-                      value={headerFilter ?? ""}
-                      onChange={(event) => {
-                        setHeaderFilter(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"Header value contains"}
-                    <input
-                      placeholder="checkout"
-                      disabled={!headerFilter.trim()}
-                      value={headerValueFilter ?? ""}
-                      onChange={(event) => {
-                        setHeaderValueFilter(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"JSON body field"}
-                    <input
-                      placeholder="data.object.status"
-                      value={bodyFieldFilter ?? ""}
-                      onChange={(event) => {
-                        setBodyFieldFilter(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    {"Body-field value contains"}
-                    <input
-                      placeholder="succeeded"
-                      disabled={!bodyFieldFilter.trim()}
-                      value={bodyValueFilter ?? ""}
-                      onChange={(event) => {
-                        setBodyValueFilter(event.currentTarget.value);
-                        filtersChanged();
-                      }}
-                    />
-                  </label>
-                </section>
-              </>
+            {binView !== "requests" ? (
+              <div className="bin-view-heading">
+                <button onClick={() => openBinView("requests")}>
+                  {"← Requests"}
+                </button>
+                <h1 ref={viewHeading} tabIndex={-1}>
+                  {binView === "config"
+                    ? "Config"
+                    : binView === "rules"
+                      ? `Response rules ${rules.length}/10`
+                      : binView === "histogram"
+                        ? "Request histogram"
+                        : binView === "audit"
+                          ? "Audit history"
+                          : "Delete bin"}
+                </h1>
+              </div>
             ) : null}
-            {filteredInteractions.length ? (
+            {binView === "requests" ? (
               <>
-                <div className="bulk-actions">
+                <div className="filters">
                   <label>
+                    <span className="sr-only">{"Search requests"}</span>
                     <input
-                      type="checkbox"
-                      checked={pageIsSelected}
-                      onChange={togglePageSelection}
+                      value={query}
+                      type="search"
+                      placeholder="Search path, headers, or body…"
+                      onChange={searchChanged}
                     />
-                    {" Select this page"}
                   </label>
-                  <span>
-                    {selectedIds.length}
-                    {" selected"}
-                  </span>
-                  <input
-                    type="url"
-                    placeholder="Bulk replay HTTPS origin"
-                    aria-label="Bulk replay destination"
-                    disabled={bulkBusy}
-                    value={bulkReplayUrl ?? ""}
-                    onChange={(event) => {
-                      setBulkReplayUrl(event.currentTarget.value);
-                    }}
-                  />
-                  <button
-                    onClick={() => runBulkEgress("replay")}
-                    disabled={!selectedIds.length || !bulkReplayUrl || bulkBusy}
-                  >
-                    {"Replay selected"}
-                  </button>
-                  <button
-                    onClick={() => runBulkEgress("forward")}
-                    disabled={
-                      !selectedIds.length || !forwardingEnabled || bulkBusy
-                    }
-                  >
-                    {"Forward selected"}
-                  </button>
-                  <button
-                    onClick={exportSelected}
-                    disabled={!selectedIds.length || bulkBusy}
-                  >
-                    {"Export selected"}
-                  </button>
-                  <button
-                    onClick={deleteSelected}
-                    disabled={!selectedIds.length || bulkBusy}
-                    className="danger"
-                  >
-                    {bulkBusy ? "Working…" : "Delete selected"}
-                  </button>
-                  <button
-                    onClick={() => setSelectedIds([])}
-                    disabled={!selectedIds.length || bulkBusy}
-                  >
-                    {"Clear"}
-                  </button>
+                  <label>
+                    <span className="sr-only">{"Filter by method"}</span>
+                    <select value={methodFilter} onChange={methodChanged}>
+                      <option value="ALL">{"All methods"}</option>
+                      {methods.map((method, _index0) => (
+                        <Fragment key={_index0}>
+                          <option value={method}>{method}</option>
+                        </Fragment>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span className="sr-only">{"Requests per page"}</span>
+                    <select
+                      value={pageSize}
+                      aria-label="Requests per page"
+                      onChange={pageSizeSelected}
+                    >
+                      <option value="10">{"10 per page"}</option>
+                      <option value="25">{"25 per page"}</option>
+                      <option value="50">{"50 per page"}</option>
+                      <option value="all">{"All"}</option>
+                    </select>
+                  </label>
                 </div>
-                {bulkProgress.length ? (
+                <div className="filter-tools">
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    aria-expanded={showAdvancedFilters}
+                  >
+                    {"Advanced filters"}
+                    {advancedFilterCount ? ` · ${advancedFilterCount}` : ""}
+                  </button>
+                  {advancedFilterCount ? (
+                    <>
+                      <button onClick={clearAdvancedFilters}>
+                        {"Clear advanced"}
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+                {showAdvancedFilters ? (
                   <>
-                    <div className="bulk-progress">
-                      <div>
-                        <strong>{"Bulk replay and forwarding progress"}</strong>
-                        <span>
-                          {"Concurrency 3 · "}
-                          {
-                            bulkProgress.filter((item) =>
-                              ["complete", "failed"].includes(item.status),
-                            ).length
-                          }
-                          {"/"}
-                          {bulkProgress.length}
-                          {" finished"}
-                        </span>
-                      </div>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>{"Request"}</th>
-                            <th>{"Operation"}</th>
-                            <th>{"Status"}</th>
-                            <th>{"Result"}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {bulkProgress.map((item, _index0) => (
-                            <Fragment key={item.id}>
-                              <tr>
-                                <td>
-                                  <code>
-                                    {item.method} {item.path}
-                                  </code>
-                                </td>
-                                <td>{item.operation}</td>
-                                <td
-                                  className={[item.status]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                                >
-                                  {item.status}
-                                </td>
-                                <td>{item.detail || "—"}</td>
-                              </tr>
-                            </Fragment>
-                          ))}
-                        </tbody>
-                      </table>
+                    <section
+                      aria-label="Advanced request filters"
+                      className="advanced-filters"
+                    >
+                      <label>
+                        {"Captured from"}
+                        <input
+                          type="datetime-local"
+                          value={timeFrom ?? ""}
+                          onChange={(event) => {
+                            setTimeFrom(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"Captured to"}
+                        <input
+                          type="datetime-local"
+                          value={timeTo ?? ""}
+                          onChange={(event) => {
+                            setTimeTo(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"Path contains"}
+                        <input
+                          placeholder="/webhooks/stripe"
+                          value={pathFilter ?? ""}
+                          onChange={(event) => {
+                            setPathFilter(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"Content type contains"}
+                        <input
+                          placeholder="application/json"
+                          value={contentTypeFilter ?? ""}
+                          onChange={(event) => {
+                            setContentTypeFilter(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"Header name"}
+                        <input
+                          placeholder="x-event-type"
+                          value={headerFilter ?? ""}
+                          onChange={(event) => {
+                            setHeaderFilter(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"Header value contains"}
+                        <input
+                          placeholder="checkout"
+                          disabled={!headerFilter.trim()}
+                          value={headerValueFilter ?? ""}
+                          onChange={(event) => {
+                            setHeaderValueFilter(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"JSON body field"}
+                        <input
+                          placeholder="data.object.status"
+                          value={bodyFieldFilter ?? ""}
+                          onChange={(event) => {
+                            setBodyFieldFilter(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                      <label>
+                        {"Body-field value contains"}
+                        <input
+                          placeholder="succeeded"
+                          disabled={!bodyFieldFilter.trim()}
+                          value={bodyValueFilter ?? ""}
+                          onChange={(event) => {
+                            setBodyValueFilter(event.currentTarget.value);
+                            filtersChanged();
+                          }}
+                        />
+                      </label>
+                    </section>
+                  </>
+                ) : null}
+                {filteredInteractions.length ? (
+                  <>
+                    <div className="bulk-actions">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={pageIsSelected}
+                          onChange={togglePageSelection}
+                        />
+                        {" Select this page"}
+                      </label>
+                      <span>
+                        {selectedIds.length}
+                        {" selected"}
+                      </span>
+                      <input
+                        type="url"
+                        placeholder="Bulk replay HTTPS origin"
+                        aria-label="Bulk replay destination"
+                        disabled={bulkBusy}
+                        value={bulkReplayUrl ?? ""}
+                        onChange={(event) => {
+                          setBulkReplayUrl(event.currentTarget.value);
+                        }}
+                      />
+                      <button
+                        onClick={() => runBulkEgress("replay")}
+                        disabled={
+                          !selectedIds.length || !bulkReplayUrl || bulkBusy
+                        }
+                      >
+                        {"Replay selected"}
+                      </button>
+                      <button
+                        onClick={() => runBulkEgress("forward")}
+                        disabled={
+                          !selectedIds.length || !forwardingEnabled || bulkBusy
+                        }
+                      >
+                        {"Forward selected"}
+                      </button>
+                      <button
+                        onClick={exportSelected}
+                        disabled={!selectedIds.length || bulkBusy}
+                      >
+                        {"Export selected"}
+                      </button>
+                      <button
+                        onClick={deleteSelected}
+                        disabled={!selectedIds.length || bulkBusy}
+                        className="danger"
+                      >
+                        {bulkBusy ? "Working…" : "Delete selected"}
+                      </button>
+                      <button
+                        onClick={() => setSelectedIds([])}
+                        disabled={!selectedIds.length || bulkBusy}
+                      >
+                        {"Clear"}
+                      </button>
                     </div>
+                    {bulkProgress.length ? (
+                      <>
+                        <div className="bulk-progress">
+                          <div>
+                            <strong>
+                              {"Bulk replay and forwarding progress"}
+                            </strong>
+                            <span>
+                              {"Concurrency 3 · "}
+                              {
+                                bulkProgress.filter((item) =>
+                                  ["complete", "failed"].includes(item.status),
+                                ).length
+                              }
+                              {"/"}
+                              {bulkProgress.length}
+                              {" finished"}
+                            </span>
+                          </div>
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>{"Request"}</th>
+                                <th>{"Operation"}</th>
+                                <th>{"Status"}</th>
+                                <th>{"Result"}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {bulkProgress.map((item, _index0) => (
+                                <Fragment key={item.id}>
+                                  <tr>
+                                    <td>
+                                      <code>
+                                        {item.method} {item.path}
+                                      </code>
+                                    </td>
+                                    <td>{item.operation}</td>
+                                    <td
+                                      className={[item.status]
+                                        .filter(Boolean)
+                                        .join(" ")}
+                                    >
+                                      {item.status}
+                                    </td>
+                                    <td>{item.detail || "—"}</td>
+                                  </tr>
+                                </Fragment>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : null}
                   </>
                 ) : null}
               </>
@@ -1448,7 +1544,7 @@ export default function Inspector({ data = {}, form }: any) {
                 </p>
               </>
             ) : null}
-            {showRules ? (
+            {binView === "rules" ? (
               <>
                 <section className="rules-panel">
                   <div className="rules-heading">
@@ -1656,7 +1752,14 @@ export default function Inspector({ data = {}, form }: any) {
                 </section>
               </>
             ) : null}
-            {showAudit ? (
+            {binView === "histogram" ? (
+              <RequestHistogram
+                requests={interactions}
+                loading={loading}
+                error={error}
+              />
+            ) : null}
+            {binView === "audit" ? (
               <>
                 <section className="rules-panel">
                   <div className="rules-heading">
@@ -1668,7 +1771,6 @@ export default function Inspector({ data = {}, form }: any) {
                         }
                       </p>
                     </div>
-                    <button onClick={toggleAudit}>{"Close"}</button>
                   </div>
                   {auditEvents.length ? (
                     <>
@@ -1710,8 +1812,19 @@ export default function Inspector({ data = {}, form }: any) {
                 </section>
               </>
             ) : null}
-            {showSettings ? (
+            {binView === "config" ? (
               <>
+                <div className="config-actions">
+                  <button onClick={exportConfig}>{"Export config"}</button>
+                  <label className="config-import">
+                    {"Import config"}
+                    <input
+                      type="file"
+                      accept="application/json,.json"
+                      onChange={importConfig}
+                    />
+                  </label>
+                </div>
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
@@ -1994,7 +2107,45 @@ export default function Inspector({ data = {}, form }: any) {
                 </form>
               </>
             ) : null}
-            {loading ? (
+            {binView === "delete" ? (
+              <form
+                className="delete-bin-panel"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void deleteBin();
+                }}
+              >
+                <p>
+                  {
+                    "Deleting this bin removes every captured request. This cannot be undone."
+                  }
+                </p>
+                <label htmlFor="delete-bin-confirmation">
+                  {"Type "}
+                  <strong>{binName || "the bin name"}</strong>
+                  {" to confirm"}
+                </label>
+                <input
+                  id="delete-bin-confirmation"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={deleteConfirmation}
+                  disabled={!binName || deletingBin}
+                  onChange={(event) =>
+                    setDeleteConfirmation(event.currentTarget.value)
+                  }
+                />
+                <button
+                  className="danger"
+                  disabled={
+                    !binName || deleteConfirmation !== binName || deletingBin
+                  }
+                >
+                  {deletingBin ? "Deleting…" : "Delete bin"}
+                </button>
+              </form>
+            ) : null}
+            {binView !== "requests" ? null : loading ? (
               <>
                 <p className="empty">{"Waiting for the edge…"}</p>
               </>

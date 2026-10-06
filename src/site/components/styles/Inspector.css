@@ -1127,3 +1127,103 @@
   opacity: 0;
   pointer-events: none;
 }
+[data-view="Inspector"] .config-import:focus-within {
+  outline: 2px solid #287348;
+  outline-offset: 2px;
+}
+[data-view="Inspector"] .aside-title {
+  gap: 12px;
+}
+[data-view="Inspector"] .settings-dropdown {
+  position: relative;
+}
+[data-view="Inspector"] .settings-options {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  padding: 5px;
+  border: 1px solid #c7cdc8;
+  border-radius: 8px;
+  background: #fffdf8;
+  box-shadow: 0 8px 24px #17231d1a;
+}
+[data-view="Inspector"] .settings-options button {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 10px;
+}
+[data-view="Inspector"] .settings-options button:hover,
+[data-view="Inspector"] .settings-options button:focus-visible {
+  background: #eef1ed;
+}
+[data-view="Inspector"] .bin-view-heading,
+[data-view="Inspector"] .config-actions {
+  width: min(1100px, calc(100% - 48px));
+  margin: 20px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+[data-view="Inspector"] .bin-view-heading h1 {
+  margin: 0;
+  font-size: 18px;
+}
+[data-view="Inspector"] .bin-view-heading button,
+[data-view="Inspector"] .config-actions button,
+[data-view="Inspector"] .delete-bin-panel button {
+  border: 1px solid #bfc6c0;
+  background: #fff;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+[data-view="Inspector"] .delete-bin-panel {
+  width: min(1100px, calc(100% - 48px));
+  margin: 16px auto;
+  padding: 20px;
+  border: 1px solid #d5d9d4;
+  border-radius: 10px;
+  background: #f7f4ed;
+}
+[data-view="Inspector"] .delete-bin-panel p {
+  margin: 0 0 20px;
+  font-size: 12px;
+}
+[data-view="Inspector"] .delete-bin-panel label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+[data-view="Inspector"] .delete-bin-panel input {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 16px;
+  border: 1px solid #c7cdc8;
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #17231d;
+}
+[data-view="Inspector"] .delete-bin-panel button.danger {
+  color: #b73520;
+  border-color: #b73520;
+}
+[data-view="Inspector"] .delete-bin-panel button:disabled,
+[data-view="Inspector"] .top-actions > button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (max-width: 760px) {
+  [data-view="Inspector"] .bin-view-heading,
+  [data-view="Inspector"] .config-actions,
+  [data-view="Inspector"] .delete-bin-panel {
+    width: calc(100% - 24px);
+  }
+}
