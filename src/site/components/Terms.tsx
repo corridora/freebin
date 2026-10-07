@@ -65,7 +65,7 @@ export default function Terms({ data = {}, form }: any) {
           <h2>{"2. Public demo and anonymous use"}</h2>
           <p>
             {
-              "The canonical demo bin is public and accepts requests through its published demo key. Its retained requests—including paths, headers after redaction, query parameters, bodies, timestamps, and bin names—appear in the shared public demo history. Source IP addresses are not shown publicly. Other bins created without a registered account are also public, but cannot capture new requests because they have no user-owned API key."
+              "The canonical demo bin is public and accepts requests through its published demo key. Its retained requests—including paths, headers after redaction, query parameters, bodies, timestamps, and bin names—appear in the shared public demo history. Source IP addresses are not shown publicly."
             }
           </p>
           <p>
@@ -89,7 +89,7 @@ export default function Terms({ data = {}, form }: any) {
           <ul>
             <li>
               {
-                "The canonical public demo allows 1 request per second, bodies up to 20 KB, and 1 MB of retained history. Other anonymous bins cannot capture new requests because every capture requires a user-owned API key."
+                "The canonical public demo allows 1 request per second, bodies up to 20 KB, and 1 MB of retained history."
               }
             </li>
             <li>
