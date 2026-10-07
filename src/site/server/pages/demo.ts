@@ -101,6 +101,8 @@ export const load: PageServerLoad = async ({ platform }) => {
   ]);
   return {
     id: demoBinId,
+    // This public capture credential is also exposed by the home-page quickstart.
+    demoApiKey: platform.env.DEMO_API_KEY || "freebin_demo_public",
     bin: {
       name: sanitizePublicText(bin.name, 200),
       responseStatus: Number(bin.responseStatus),

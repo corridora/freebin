@@ -46,7 +46,6 @@ export default function Admin({ data = {}, form }: any) {
           </article>
         </section>
 
-
         <section aria-labelledby="users-title" className="users">
           <div className="section-head">
             <h2 id="users-title">{"Users"}</h2>
@@ -83,6 +82,30 @@ export default function Admin({ data = {}, form }: any) {
             </table>
           </div>
         </section>
+        <details className="engram-explainer">
+          <summary>What is Engram?</summary>
+          <div>
+            <p>
+              Engram is a knowledge graph of the Freebin codebase. It maps
+              files, functions, and concepts as nodes, with connections showing
+              how they relate to one another. Clusters group related parts of
+              the project.
+            </p>
+            <p>
+              This helps developers and coding assistants find relevant code,
+              trace dependencies, and identify which parts of the application
+              need review when a feature changes. For example, a request
+              handler’s connections can help you follow its authentication and
+              storage logic.
+            </p>
+            <p>
+              Use the report below to search nodes, filter by cluster, and
+              select a node to inspect its connections. The report is a snapshot
+              included in this build; it updates with the next build. Download
+              JSON to inspect the same snapshot outside this page.
+            </p>
+          </div>
+        </details>
         <EngramReport report={data.engram} />
       </main>
     </div>

@@ -54,6 +54,38 @@
   overflow: hidden;
   margin-bottom: 42px;
 }
+[data-view="Admin"] .engram-explainer {
+  margin: 24px 0 16px;
+  border: 1px solid #c9cec6;
+  border-radius: 12px;
+  background: #fffdf8;
+  font-size: 1rem;
+}
+[data-view="Admin"] .engram-explainer summary {
+  padding: 18px 20px;
+  border-radius: 12px;
+  font-weight: 400;
+  cursor: pointer;
+}
+[data-view="Admin"] .engram-explainer summary:hover {
+  background: #eef2ed;
+}
+[data-view="Admin"] .engram-explainer summary:focus-visible {
+  outline: 2px solid #287348;
+  outline-offset: 3px;
+}
+[data-view="Admin"] .engram-explainer > div {
+  padding: 0 20px 20px;
+  color: #53635a;
+  line-height: 1.6;
+}
+[data-view="Admin"] .engram-explainer p {
+  max-width: 78ch;
+  margin: 0 0 14px;
+}
+[data-view="Admin"] .engram-explainer p:last-child {
+  margin-bottom: 0;
+}
 [data-view="Admin"] .engram-report .eyebrow {
   margin-bottom: 8px;
   font-size: 1rem;
