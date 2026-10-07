@@ -3,7 +3,7 @@ info:
   title: freebin.org API
   version: 1.0.0
   description: |-
-    Manage bins and inspect captured development requests. Management endpoints are versioned under /api/v1. Capture endpoints use /b/{binId} with an optional path suffix and require an owner account API key; the designated public demo also accepts its deployment-configured demo key. Bin management accepts account API keys, browser sessions, and, where supported, anonymous inspector capabilities. Visiting the token-bearing anonymous inspectUrl exchanges that capability for a Secure, HttpOnly cookie scoped to the bin API and removes the token from the URL. Query tokens are not accepted directly on management APIs. JSON mutation requests with an Origin header must use the same origin as the service.
+    Manage bins and inspect captured development requests. Management endpoints are versioned under /api/v1. Capture endpoints use /b/{binId} with an optional path suffix and require an owner account API key; the designated public demo also accepts its deployment-configured demo key. Bin management accepts account API keys, browser sessions, and, where supported, anonymous inspector capabilities. Visiting the token-bearing anonymous inspectUrl exchanges that capability for a Secure, HttpOnly cookie scoped to the bin API and removes the token from the URL. Query tokens are not accepted directly on management APIs. Mutation requests outside capture endpoints must use the service origin when an Origin header is present.
   license:
     name: MIT
     identifier: MIT
@@ -676,6 +676,7 @@ paths:
     get:
       tags: [Requests]
       summary: Stream request-created events
+      description: Checks the latest retained request every five seconds for 25 iterations (about 125 seconds). Emits a request event with the latest request ID when it changes, or a keepalive otherwise. This signals history changes rather than delivering every capture. Reconnect when the stream closes.
       operationId: streamRequests
       security:
         - bearerAuth: []
@@ -898,7 +899,7 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/Unavailable"
-      description: Replay requires a public HTTPS target whose origin is allowed by this deployment. Manual forwarding uses the configured forwarding URL and requires forwarding to be enabled. Both operations preserve an attempt record, use a 10-second timeout without following redirects, and apply egress rate limits. Destination HTTP errors still return 200 with the destination status; transport failures return 502.
+      description: Replay requires an HTTPS target whose origin is allowed by this deployment. Manual forwarding uses the configured forwarding URL and requires forwarding to be enabled. Both operations preserve an attempt record, use a 10-second timeout without following redirects, and apply egress rate limits. Destination HTTP errors still return 200 with the destination status; transport failures return 502.
   /api/v1/bins/{binId}/interactions/{requestId}/forwarding:
     parameters:
       - $ref: "#/components/parameters/BinId"
@@ -1815,7 +1816,7 @@ components:
           type:
             - string
             - "null"
-          description: Null for captures without a body (including GET and HEAD); gzip captures use the application compressed-body encoding.
+          description: Null for captures without a body (including GET and HEAD). Private gzip captures use freebin:base64:<encoded bytes>; public-demo compressed bodies are redacted. Credential-like JSON and form fields are redacted before storage.
         contentType:
           type: [string, "null"]
         remoteAddress:
@@ -2054,7 +2055,7 @@ components:
             pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
             not:
               pattern: ^\s*(?:[hH][oO][sS][tT]|[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[tT][rR][aA][nN][sS][fF][eE][rR]-[eE][nN][cC][oO][dD][iI][nN][gG]|[cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]|[kK][eE][eE][pP]-[aA][lL][iI][vV][eE]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][eE][nN][tT][iI][cC][aA][tT][eE]|[pP][rR][oO][xX][yY]-[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[tT][eE]|[tT][rR][aA][iI][lL][eE][rR]|[uU][pP][gG][rR][aA][dD][eE]|[cC][fF]-[rR][aA][yY]|[cC][fF]-[cC][oO][nN][nN][eE][cC][tT][iI][nN][gG]-[iI][pP]|[xX]-[fF][oO][rR][wW][aA][rR][dD][eE][dD]-[fF][oO][rR]|[tT][rR][aA][cC][eE][pP][aA][rR][eE][nN][tT]|[tT][rR][aA][cC][eE][sS][tT][aA][tT][eE]|[bB][aA][gG][gG][aA][gG][eE])\s*$
-          description: Names are trimmed, lowercased, and deduplicated. Freebin authorization, hop-by-hop, source-address, and tracing headers cannot be retained; other sensitive headers are retained only when listed here.
+          description: Names are trimmed, lowercased, and deduplicated. Freebin authorization, hop-by-hop, selected source-address, and tracing headers cannot be retained; other sensitive headers are retained only when listed here.
         forwardingConditions:
           $ref: "#/components/schemas/ForwardingConditions"
     ShareInput:
@@ -2229,7 +2230,7 @@ components:
             - replay
             - forward
           default: replay
-          description: Forward uses the bin's configured automatic-forwarding destination and header allowlist; url is ignored. Manual forwarding does not apply automatic-forwarding conditions.
+          description: Forward uses the bin's configured automatic-forwarding destination and header allowlist; url is ignored. Manual forwarding does not apply automatic-forwarding conditions and supports the same request edits as replay.
       allOf:
         - if:
             properties:
