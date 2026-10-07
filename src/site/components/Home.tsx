@@ -5,7 +5,9 @@ import { invalidateAll } from "@/components/AppShell";
 import "./styles/Home.css";
 
 export default function Home({ data = {}, form }: any) {
-  const sampleRequest = `curl -X POST https://freebin.org/b/${data.demoBinId || "YOUR_BIN_ID"}/hello \\
+  const [origin, setOrigin] = useState("https://freebin.org");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const sampleRequest = `curl -X POST ${origin}/b/${data.demoBinId || "YOUR_BIN_ID"}/hello \\
   -H "authorization: Bearer ${data.demoBinId ? data.demoApiKey : "YOUR_API_KEY"}" \\
   -H "content-type: application/json" \\
   -d '{"message":"hello from freebin"}'`;
@@ -53,9 +55,11 @@ export default function Home({ data = {}, form }: any) {
               <div className="code">
                 <div>
                   <span className="green">{"POST"}</span>
-                  {" /b/k7p2x9m4d1"}
+                  {` /b/${data.demoBinId || "k7p2x9m4d1"}`}
                 </div>
-                <div className="dim">{"authorization: Bearer ••••••••"}</div>
+                <div className="dim">
+                  {`authorization: Bearer ${data.demoBinId ? data.demoApiKey : "••••••••"}`}
+                </div>
                 <div className="dim">{"content-type: application/json"}</div>
                 <div className="dim">{"user-agent: Stripe/1.0"}</div>
                 <br />

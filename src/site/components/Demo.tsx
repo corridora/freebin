@@ -76,6 +76,11 @@ export default function Demo({ data = {} }: any) {
             Captured requests appear in the public history below. The demo’s
             shared rate limit applies.
           </p>
+          {current.demoApiKey ? (
+            <p>
+              Public demo authorization: <code>Bearer {current.demoApiKey}</code>
+            </p>
+          ) : null}
         </div>
         <div
           className="sample-actions"

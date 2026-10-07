@@ -29,7 +29,7 @@
     "SIGNUPS_ENABLED": "true",
     "DEPLOYMENT_ENVIRONMENT": "local",
     "DEMO_BIN_ID": "demo-public",
-    "DEMO_API_KEY": "freebin_demo_public",
+    "DEMO_API_KEY": "fb_8ffddd4d-6793-46e7-9089-58264fdee4cc",
     "RATE_LIMIT_SALT": "local-development-only-change-before-deployment",
     "ADMIN_EMAILS": "",
     "RUM_SCRIPT_URL": "",

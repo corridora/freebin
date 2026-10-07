@@ -9,7 +9,8 @@ export const load: PageServerLoad = async ({ platform }) => {
   const signupsEnabled = ["1", "true", "yes", "on"].includes(
     (platform?.env.SIGNUPS_ENABLED || "").toLowerCase(),
   );
-  const demoApiKey = platform?.env.DEMO_API_KEY || "freebin_demo_public";
+  const demoApiKey =
+    platform?.env.DEMO_API_KEY || "fb_8ffddd4d-6793-46e7-9089-58264fdee4cc";
   if (!platform?.env.DB)
     return {
       demoBinId: platform?.env.DEMO_BIN_ID || null,

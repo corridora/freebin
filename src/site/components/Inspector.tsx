@@ -2263,7 +2263,7 @@ export default function Inspector({ data = {}, form, readOnly = false }: any) {
                             {endpoint}
                             {" \\"}
                             <br />
-                            {'  -H "authorization: Bearer YOUR_API_KEY" \\'}
+                            {`  -H "authorization: Bearer ${readOnly && data.demoApiKey ? data.demoApiKey : "YOUR_API_KEY"}" \\`}
                             <br />
                             {'  -H "content-type: application/json" \\'}
                             <br />

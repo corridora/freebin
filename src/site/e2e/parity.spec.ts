@@ -267,8 +267,10 @@ test("demo traffic is redacted and anonymous capture is denied", async ({
     data: "fixture",
   });
   expect(forbidden.status()).toBe(401);
-  const demo = await request.post("/b/demo-public/redaction", {
-    headers: { authorization: "Bearer freebin_demo_public" },
+  const demoSettings = await request.get("/api/ui/page?path=%2F");
+  const { demoBinId, demoApiKey } = await demoSettings.json();
+  const demo = await request.post(`/b/${demoBinId}/redaction`, {
+    headers: { authorization: `Bearer ${demoApiKey}` },
     data: { token: "sensitive-fixture", message: "public fixture" },
   });
   expect(demo.ok()).toBeTruthy();
