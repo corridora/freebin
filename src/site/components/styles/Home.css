@@ -7,7 +7,7 @@
 }
 [data-view="Home"] .quickstart {
   display: grid;
-  grid-template-columns: 0.75fr 1.25fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 55px;
   align-items: center;
   padding: 48px 0;
@@ -41,7 +41,7 @@
   background: #17231d;
   color: #dce7df;
   font: 1rem/1.75 var(--font-mono);
-  white-space: pre-wrap;
+  white-space: no-wrap;
   overflow-wrap: anywhere;
 }
 [data-view="Home"] .sample button {
