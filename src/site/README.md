@@ -149,6 +149,8 @@ Platform references: [Cloudflare Next.js guide](https://developers.cloudflare.co
 
 ## Admin access and Engram reports
 
+The service overview includes the Cloudflare Worker version ID, optional version tag, and upload time. Production builds configure a link to the Worker's Deployments dashboard from `CLOUDFLARE_ACCOUNT_ID` and `WORKER_NAME`. Local previews display a local-development status instead of a deployment version.
+
 Sign in with an email listed in the Worker's `ADMIN_EMAILS` and open `/admin`. To enable a local admin on the compiled preview:
 
 ```bash

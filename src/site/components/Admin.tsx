@@ -27,6 +27,53 @@ export default function Admin({ data = {}, form }: any) {
           </span>
         </header>
 
+        <section aria-labelledby="deployment-title" className="deployment">
+          <h2 id="deployment-title">Cloudflare deployment</h2>
+          {data.deployment?.versionId ? (
+            <dl>
+              <div>
+                <dt>Worker version</dt>
+                <dd>
+                  {data.deployment.dashboardUrl ? (
+                    <a
+                      href={data.deployment.dashboardUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Open Worker deployments in Cloudflare"
+                    >
+                      <code>{data.deployment.versionId}</code>
+                    </a>
+                  ) : (
+                    <code>{data.deployment.versionId}</code>
+                  )}
+                </dd>
+              </div>
+              {data.deployment.tag ? (
+                <div>
+                  <dt>Version tag</dt>
+                  <dd>{data.deployment.tag}</dd>
+                </div>
+              ) : null}
+              {data.deployment.uploadedAt ? (
+                <div>
+                  <dt>Uploaded</dt>
+                  <dd>
+                    <time dateTime={data.deployment.uploadedAt}>
+                      {new Date(data.deployment.uploadedAt).toLocaleString()}
+                    </time>
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : (
+            <p>
+              {data.deployment?.environment === "local"
+                ? "Not deployed (local development)."
+                : "Deployment metadata unavailable."}
+            </p>
+          )}
+        </section>
+
         <section aria-label="Service totals" className="totals">
           <article>
             <span>{"Users"}</span>

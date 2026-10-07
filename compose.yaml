@@ -2,6 +2,8 @@ services:
   freebin:
     build:
       context: ./src/site
+      args:
+        FREEBIN_GIT_COMMIT: "${FREEBIN_GIT_COMMIT:-}"
     ports:
       - "${FREEBIN_PORT:-8787}:8787"
     volumes:

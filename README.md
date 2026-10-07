@@ -38,6 +38,8 @@ npm run start -- --port 8788
 
 For a Docker-based local environment, run `npm start` from the repository root and open [http://localhost:8787](http://localhost:8787). Docker Compose preserves data in the `freebin-data` volume; `npm run local:down` stops the service.
 
+The footer displays the build's abbreviated Git commit and links to that commit on GitHub. Builds read the current checkout; `npm start` and `npm run local` also pass it into Docker. For builds without a Git checkout, set `FREEBIN_GIT_COMMIT` to the full commit hash.
+
 ## Documentation
 
 | Guide                                                                  | Use it for                                                                                 |

@@ -85,6 +85,9 @@ export function productionConfig(base, settings, { dryRun = false } = {}) {
     ...base.vars,
     SIGNUPS_ENABLED: "false",
     DEPLOYMENT_ENVIRONMENT: settings.DEPLOYMENT_ENVIRONMENT || "production",
+    CLOUDFLARE_DEPLOYMENTS_URL: settings.CLOUDFLARE_ACCOUNT_ID
+      ? `https://dash.cloudflare.com/${encodeURIComponent(settings.CLOUDFLARE_ACCOUNT_ID)}/workers/services/view/${encodeURIComponent(config.name)}/production/deployments`
+      : "",
   };
   for (const name of variableNames)
     if (settings[name] !== undefined) config.vars[name] = settings[name];

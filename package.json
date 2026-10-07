@@ -5,8 +5,8 @@
   "description": "Root commands for running freebin.org locally and deploying it to Cloudflare.",
   "scripts": {
     "engram:build": "node src/site/scripts/build-engram.mjs",
-    "start": "docker compose up --build",
-    "local": "docker compose up --build",
+    "start": "node src/site/scripts/compose-local.mjs",
+    "local": "node src/site/scripts/compose-local.mjs",
     "local:down": "docker compose down",
     "check": "npm run check --prefix src/site",
     "build": "npm run build --prefix src/site",

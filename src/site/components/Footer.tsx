@@ -8,6 +8,7 @@ export default function Footer({
   user = null,
   bins = [],
   appVersion,
+  appVersionUrl,
   body,
   headers = {},
   form,
@@ -29,7 +30,13 @@ export default function Footer({
             {"GitHub"}
           </a>
           {" ·\n    Version: "}
-          {appVersion || "---"}
+          {appVersion && appVersionUrl ? (
+            <a href={appVersionUrl} target="_blank" rel="noreferrer">
+              {appVersion}
+            </a>
+          ) : (
+            "---"
+          )}
         </span>
       </footer>
     </div>

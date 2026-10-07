@@ -24,6 +24,39 @@
   gap: 12px;
   margin-bottom: 42px;
 }
+[data-view="Admin"] .deployment {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #c9cec6;
+  border-radius: 10px;
+  background: #fffdf8;
+}
+[data-view="Admin"] .deployment h2 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+[data-view="Admin"] .deployment dl,
+[data-view="Admin"] .deployment p {
+  margin: 0;
+}
+[data-view="Admin"] .deployment dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 8px;
+}
+[data-view="Admin"] .deployment dt,
+[data-view="Admin"] .deployment p {
+  color: #68706b;
+}
+[data-view="Admin"] .deployment dt {
+  min-width: 130px;
+}
+[data-view="Admin"] .deployment dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
 [data-view="Admin"] .totals article {
   display: grid;
   gap: 18px;
