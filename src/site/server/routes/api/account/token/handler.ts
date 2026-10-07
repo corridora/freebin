@@ -13,7 +13,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
   const user = await getUser(platform.env.DB, request);
   if (!user) return json({ error: "Sign in required" }, { status: 401 });
   const input = (await request.json().catch(() => ({}))) as { name?: string };
-  const token = createId(48);
+  const token = `fb_${crypto.randomUUID()}`;
   const id = createId(16);
   const name =
     String(input.name || "API key")

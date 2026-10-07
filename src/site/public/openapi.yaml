@@ -158,7 +158,7 @@ paths:
     post:
       tags: [Account]
       summary: Create an API key
-      description: Accounts may have five active API keys. The complete token is returned only in this response.
+      description: New keys use fb_<uuid> format with a randomly generated UUID v4. Accounts may have five active API keys. The complete token is returned only in this response. Previously issued keys remain valid.
       operationId: createApiKey
       security:
         - cookieAuth: []
@@ -185,6 +185,8 @@ paths:
                     $ref: "#/components/schemas/ApiKey"
                   token:
                     type: string
+                    pattern: "^fb_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                    example: fb_123e4567-e89b-42d3-a456-426614174000
         "401":
           $ref: "#/components/responses/Unauthorized"
         "409":
