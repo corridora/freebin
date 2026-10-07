@@ -16,6 +16,19 @@ export const load: PageServerLoad = async ({ platform, request }) => {
   if (!isAdminEmail(user.email, platform.env.ADMIN_EMAILS))
     redirect(303, "/account");
 
+  const environment = platform.env.DEPLOYMENT_ENVIRONMENT || "local";
+  const metadata =
+    environment === "local" ? undefined : platform.env.CF_VERSION_METADATA;
+  const deployment = {
+    environment,
+    versionId: metadata?.id || null,
+    tag: metadata?.tag || null,
+    uploadedAt: metadata?.timestamp || null,
+    dashboardUrl: metadata?.id
+      ? platform.env.CLOUDFLARE_DEPLOYMENTS_URL || null
+      : null,
+  };
+
   const [totals, users] = await Promise.all([
     platform.env.DB.prepare(
       `
@@ -48,5 +61,6 @@ export const load: PageServerLoad = async ({ platform, request }) => {
     totals,
     users: users.results,
     engram,
+    deployment,
   };
 };

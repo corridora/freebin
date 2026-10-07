@@ -4,7 +4,6 @@ import type {
   LayoutServerLoad,
   Actions,
 } from "@/server/context";
-import { serviceVersion } from "@/server/domain/telemetry";
 import { getUser, isAdminEmail } from "@/server/domain/auth";
 
 export const load: LayoutServerLoad = async ({
@@ -12,12 +11,17 @@ export const load: LayoutServerLoad = async ({
   request,
   setHeaders,
 }) => {
-  const appVersion = (serviceVersion(platform?.env) || "0000000").slice(-7);
+  const commit = process.env.FREEBIN_GIT_COMMIT || "";
+  const appVersion = commit.slice(0, 7) || null;
+  const appVersionUrl = commit
+    ? `https://github.com/corridora/freebin/commit/${commit}`
+    : null;
   if (!platform?.env.DB)
-    return { headerUser: null, headerBins: [], appVersion };
+    return { headerUser: null, headerBins: [], appVersion, appVersionUrl };
 
   const user = await getUser(platform.env.DB, request);
-  if (!user) return { headerUser: null, headerBins: [], appVersion };
+  if (!user)
+    return { headerUser: null, headerBins: [], appVersion, appVersionUrl };
   setHeaders({ "cache-control": "private, no-store" });
 
   const bins = await platform.env.DB.prepare(
@@ -37,5 +41,6 @@ export const load: LayoutServerLoad = async ({
     },
     headerBins: bins.results,
     appVersion,
+    appVersionUrl,
   };
 };

@@ -34,7 +34,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <>
       <Header user={data?.headerUser} bins={data?.headerBins || []} />
       <div id="page-content">{children}</div>
-      <Footer appVersion={data?.appVersion} />
+      <Footer
+        appVersion={data?.appVersion}
+        appVersionUrl={data?.appVersionUrl}
+      />
       <Rum />
     </>
   );

@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ARG FREEBIN_GIT_COMMIT
+ENV FREEBIN_GIT_COMMIT=$FREEBIN_GIT_COMMIT
 RUN npm run build
 
 FROM node:24-bookworm-slim
