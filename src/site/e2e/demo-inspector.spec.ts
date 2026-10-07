@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("public demo shares the bin inspector and disables every action", async ({
+test("public demo shares the bin inspector and disables every inspector action", async ({
   page,
 }) => {
   const protectedRequests: string[] = [];
@@ -166,4 +166,173 @@ test("public demo shares the bin inspector and disables every action", async ({
   });
   expect(protectedRequests).toEqual([]);
   expect(errors).toEqual([]);
+});
+
+test("demo sample methods capture example data, refresh history, and show failures", async ({
+  page,
+}) => {
+  const captures: { method: string; path: string; body: string | null }[] = [];
+  const interactions: any[] = [];
+  let outcome = "captured";
+  let releaseFirst: () => void = () => {};
+  const firstCapture = new Promise<void>((resolve) => {
+    releaseFirst = resolve;
+  });
+  await page.route("**/api/ui/page?path=%2Fdemo", (route) =>
+    route.fulfill({
+      json: {
+        id: "demo-public",
+        demoApiKey: "public-sample-key",
+        bin: {
+          name: "Public demo",
+          responseStatus: 200,
+          responseBody: "OK",
+          responseHeaders: {},
+          forwardingAuthHeaders: [],
+          forwardingConditions: [],
+        },
+        interactions,
+        rules: [],
+        auditEvents: [],
+      },
+    }),
+  );
+  await page.route("**/b/demo-public/sample/*", async (route) => {
+    const request = route.request();
+    expect(request.headers().authorization).toBe("Bearer public-sample-key");
+    if (!captures.length) await firstCapture;
+    if (outcome === "network") {
+      await route.abort();
+      return;
+    }
+    if (outcome === "limited") {
+      await route.fulfill({ status: 429, body: "Capture rate limit exceeded" });
+      return;
+    }
+    const method = request.method();
+    const path = new URL(request.url()).pathname.replace("/b/demo-public", "");
+    captures.push({ method, path, body: request.postData() });
+    interactions.unshift({
+      id: `sample-${captures.length}`,
+      method,
+      path,
+      timestamp: new Date().toISOString(),
+      headers: {},
+      query: {},
+      body: request.postData(),
+    });
+    await route.fulfill({
+      status: method === "DELETE" ? 404 : 200,
+      headers: { "x-freebin-captured": "true" },
+      body: "Sample response",
+    });
+  });
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto("/demo");
+  const samples = page.getByRole("region", { name: "Send a sample request." });
+  await expect(samples).toBeVisible();
+  await expect(samples.getByRole("button")).toHaveText([
+    "POST",
+    "GET",
+    "DELETE",
+    "PATCH",
+    "OPTIONS",
+  ]);
+  await page.evaluate(() => document.fonts.ready);
+  const geometry = () =>
+    samples.evaluate((element) => {
+      const rect = (node: Element) => {
+        const { x, y, width, height } = node.getBoundingClientRect();
+        return { x, y, width, height };
+      };
+      return {
+        section: rect(element),
+        buttons: [...element.querySelectorAll("button")].map(rect),
+      };
+    });
+  const beforeClick = await geometry();
+  await samples
+    .getByRole("button", { name: "Send POST sample request" })
+    .click();
+  await expect(
+    samples.getByRole("button", { name: "Send POST sample request" }),
+  ).toHaveText("POST");
+  await expect(samples.getByRole("status")).toHaveText(
+    "Sending POST sample request…",
+  );
+  expect(await geometry()).toEqual(beforeClick);
+  for (const button of await samples.getByRole("button").all())
+    await expect(button).toBeDisabled();
+  releaseFirst();
+  await expect(samples.getByRole("status")).toContainText(
+    "POST captured — 200",
+  );
+  await expect(page.locator(".request-list")).toContainText("/sample/post");
+  await expect(samples.getByRole("button").first()).toBeEnabled();
+  expect(await geometry()).toEqual(beforeClick);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const method of ["GET", "DELETE", "PATCH", "OPTIONS"]) {
+    const beforeNextClick = await geometry();
+    await samples
+      .getByRole("button", { name: `Send ${method} sample request` })
+      .click();
+    await expect(samples.getByRole("status")).toContainText(
+      `${method} captured`,
+    );
+    await expect(page.locator(".request-list")).toContainText(
+      `/sample/${method.toLowerCase()}`,
+    );
+    await expect(samples.getByRole("button").first()).toBeEnabled();
+    expect(await geometry()).toEqual(beforeNextClick);
+  }
+  expect(captures.map((capture) => capture.method)).toEqual([
+    "POST",
+    "GET",
+    "DELETE",
+    "PATCH",
+    "OPTIONS",
+  ]);
+  for (const capture of captures) {
+    if (["POST", "PATCH"].includes(capture.method))
+      expect(JSON.parse(capture.body!)).toEqual({
+        method: capture.method,
+        message: `Hello from the ${capture.method} demo`,
+      });
+    else expect(capture.body).toBeNull();
+  }
+  outcome = "limited";
+  await samples
+    .getByRole("button", { name: "Send GET sample request" })
+    .click();
+  await expect(samples.getByRole("status")).toContainText(
+    "GET failed — 429 Capture rate limit exceeded",
+  );
+  outcome = "network";
+  await samples
+    .getByRole("button", { name: "Send GET sample request" })
+    .click();
+  await expect(samples.getByRole("status")).toContainText(
+    "could not reach the demo endpoint",
+  );
+  for (const button of await samples.getByRole("button").all())
+    await expect(button).toBeEnabled();
+  await expect(
+    page
+      .locator('[data-view="Inspector"]')
+      .getByRole("button", { name: "Share bin", exact: true }),
+  ).toBeDisabled();
+  await page.screenshot({
+    path: "artifacts/baseline/demo-samples-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.screenshot({
+    path: "artifacts/baseline/demo-samples-mobile.png",
+    fullPage: true,
+  });
 });

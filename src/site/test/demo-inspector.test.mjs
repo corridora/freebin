@@ -82,7 +82,11 @@ test("public inspector loads all demo captures and excludes secrets and private 
   };
   const data = await load({
     platform: {
-      env: { DB: db, DEMO_BIN_ID: "demo", DEMO_API_KEY: "private-demo-key" },
+      env: {
+        DB: db,
+        DEMO_BIN_ID: "demo",
+        DEMO_API_KEY: "public-demo-capture-key",
+      },
     },
   });
   assert.equal(data.id, "demo");
@@ -94,11 +98,13 @@ test("public inspector loads all demo captures and excludes secrets and private 
   assert.ok(JSON.stringify(data).includes("public-query"));
   assert.ok(JSON.stringify(data).includes("public message"));
   assert.ok(!JSON.stringify(data).includes("private-"));
-  assert.equal(data.demoApiKey, undefined);
+  assert.equal(data.demoApiKey, "public-demo-capture-key");
   const hidden = await load({
     platform: { env: { DB: db, DEMO_BIN_ID: "private" } },
   });
   assert.deepEqual(hidden.interactions, []);
   assert.deepEqual(hidden.rules, []);
   assert.deepEqual(hidden.auditEvents, []);
+  assert.equal(hidden.demoApiKey, undefined);
+  assert.equal((await load({})).demoApiKey, undefined);
 });

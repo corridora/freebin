@@ -1,0 +1,90 @@
+[data-view="Demo"] .sample-requests {
+  width: min(1100px, calc(100% - 48px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px 28px;
+  margin: 24px auto;
+  padding: 24px;
+  border: 1px solid #c9cec6;
+  border-radius: 12px;
+  background: #fffdf8;
+}
+[data-view="Demo"] .sample-requests .eyebrow {
+  margin: 0 0 10px;
+}
+[data-view="Demo"] .sample-requests h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+[data-view="Demo"] .sample-requests p:not(.eyebrow) {
+  margin: 0;
+  color: #53635a;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+[data-view="Demo"] .sample-requests code {
+  color: #b73520;
+}
+[data-view="Demo"] .sample-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+[data-view="Demo"] .sample-actions button {
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid #bfc6c0;
+  border-radius: 7px;
+  background: #fffdf8;
+  color: #17231d;
+  font: 400 1rem var(--font-mono);
+}
+[data-view="Demo"] .sample-actions button:hover:not(:disabled),
+[data-view="Demo"] .sample-actions[aria-busy="true"] button:hover {
+  border-color: #17231d;
+  background: #17231d;
+  color: #fff;
+}
+[data-view="Demo"] .sample-actions button:focus-visible {
+  outline: 2px solid #287348;
+  outline-offset: 3px;
+}
+[data-view="Demo"] .sample-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+[data-view="Demo"] .sample-actions[aria-busy="true"] button:disabled {
+  opacity: 1;
+  cursor: wait;
+}
+[data-view="Demo"] .sample-requests p.sample-result {
+  grid-column: 1 / -1;
+  padding-top: 14px;
+  border-top: 1px solid #d5d9d4;
+  height: calc(3.2em + 15px);
+  overflow: auto;
+  color: #237443;
+  font-family: var(--font-mono);
+}
+[data-view="Demo"] .sample-requests p.sample-result.error {
+  color: #b73520;
+}
+[data-view="Demo"] [data-view="Inspector"] .app {
+  height: auto;
+}
+[data-view="Demo"] [data-view="Inspector"] .app main {
+  height: auto;
+  overflow: visible;
+}
+@media (max-width: 1000px) {
+  [data-view="Demo"] .sample-requests {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  [data-view="Demo"] .sample-requests {
+    width: calc(100% - 24px);
+    padding: 20px;
+  }
+}
