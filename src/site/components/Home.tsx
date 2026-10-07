@@ -42,7 +42,7 @@ export default function Home({ data = {}, form }: any) {
               </Link>
               <p className="fine">
                 {data.signupsEnabled
-                  ? "Create an account to start using private request bins."
+                  ? "Create an account to start using free bins."
                   : "New registrations are temporarily paused."}
               </p>
             </div>
@@ -86,14 +86,20 @@ export default function Home({ data = {}, form }: any) {
             <div>
               <p className="eyebrow">{"SEND YOUR FIRST REQUEST"}</p>
               <h2 id="quickstart-title">
-                {data.demoBinId
-                  ? "Post to the live demo."
-                  : "Copy, replace, run."}
+                {data.demoBinId ? (
+                  <>
+                    {"Post to the "}
+                    <Link href="/demo">{"live demo"}</Link>{"."}
+                  </>
+                ) : (
+                  "Copy, replace, run."
+                )}
               </h2>
               {data.demoBinId ? (
                 <>
+                <h5>{"Or from the command line"}</h5>
                   <p>
-                    <ol><li>{"Copy this command"}</li>
+                    <ol><li>{"Copy the command"}</li>
                       <li>{"Run from the terminal"}</li>
                       <li>{"View in the"} <Link href="/demo">{"shared public history"}</Link></li>
                     </ol>
