@@ -1,20 +1,19 @@
 "use client";
-import { Fragment, useState, useEffect, useRef } from "react";
+import { Fragment } from "react";
 import Link from "next/link";
-import { invalidateAll } from "@/components/AppShell";
 import "./styles/Docs.css";
 
 export default function Docs({ data = {}, form }: any) {
   const endpointGroups = [
     {
-      title: "Stable management API",
+      title: "Management API",
       description:
-        "Management endpoints intended for integrations and the first-party browser. Replace path parameters with IDs returned by the API.",
+        "Replace path parameters with IDs returned by the API. Bin access means an owner account API key, an authorized browser session, or an anonymous inspector capability. Collaborator sessions require the permission for each operation.",
       endpoints: [
         [
           "GET",
           "/api/v1/bins",
-          "List every bin owned by the API-key user, newest first. Returns names, IDs, creation times, and retained-request counts.",
+          "List bins owned by the API-key account, newest first. An anonymous inspector capability lists its bin. An unrecognized nonempty credential returns an empty list.",
           "Bearer key",
         ],
         [
@@ -27,123 +26,135 @@ export default function Docs({ data = {}, form }: any) {
           "GET",
           "/api/v1/bins/:binId",
           "Read a bin’s name, response and forwarding configuration, creation time, and current public-share token.",
-          "Bearer, session, or token query",
+          "Bin access",
         ],
         [
           "PATCH",
           "/api/v1/bins/:binId",
-          "Customize capture response fields and optional Phase 0 automatic forwarding to one allowlisted HTTPS base URL.",
-          "Bearer key or session",
+          "Update the fallback capture response and automatic forwarding configuration, including one allowed HTTPS destination and optional conditions.",
+          "Bin access",
         ],
         [
           "DELETE",
           "/api/v1/bins/:binId",
-          "Permanently delete the bin and all of its retained requests.",
-          "Bearer key or session",
+          "Permanently delete a bin and its retained data. Collaborator sessions cannot delete bins.",
+          "Bin access",
         ],
         [
           "GET / PUT",
           "/api/v1/bins/:binId/config",
           "Export or atomically replace the versioned portable bin configuration and ordered response rules. Captures and replay history are preserved.",
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/audit",
-          "List the newest permission-gated mutation events; up to 500 are retained per bin.",
-          "Bearer key or session",
+          "List mutation audit events, newest first. limit accepts 1–500 and defaults to 100; up to 500 events are retained per bin.",
+          "Bin access",
         ],
         [
-          "GET / PUT / DELETE",
+          "GET",
           "/api/v1/bins/:binId/collaborators",
-          "List, invite or update, and remove registered-user collaborators. Invitation changes remain owner-only.",
-          "Session required",
+          "List collaborators and their permissions. Collaborator sessions require collaborators.view.",
+          "Bin access",
+        ],
+        [
+          "PUT / DELETE",
+          "/api/v1/bins/:binId/collaborators",
+          "Invite or update a registered-user collaborator with PUT; remove one with DELETE. Both operations require the bin owner’s browser session.",
+          "Owner session required",
         ],
         [
           "GET / POST / PUT",
           "/api/v1/bins/:binId/rules",
           "List, create, or reorder conditional response rules. Enabled rules use first-match-wins order.",
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "PATCH / DELETE",
           "/api/v1/bins/:binId/rules/:ruleId",
           "Update or delete one conditional response rule.",
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "POST",
           "/api/v1/bins/:binId/rules/test",
           "Test a synthetic request against enabled rules without capturing it.",
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/interactions?limit=10&offset=0",
-          "List retained requests. limit accepts 1–100 or all and defaults to 10; responses include total and offset metadata.",
-          "Bearer, session, or token query",
+          "List retained requests, newest first. limit accepts 1–100 or all and defaults to 10; responses include an interactions array plus meta.total, meta.limit, and meta.offset.",
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/stream?lastId=:requestId",
-          "Open a server-sent event stream. Emits request events and keepalives for about 25 seconds; reconnect to continue.",
-          "Bearer, session, or token query",
+          "Open a server-sent event stream. Checks the latest request every five seconds for about 125 seconds, emitting request IDs or keepalives. Reconnect to continue; Last-Event-ID takes precedence over lastId.",
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/export",
-          "Download bin metadata and every currently retained request as JSON.",
-          "Bearer key or session",
+          "Download bin configuration, rules, retained requests, replay attempts, and automatic-forwarding attempts as JSON.",
+          "Bin access",
         ],
         [
           "POST",
           "/api/v1/bins/:binId/share",
           'Enable or disable a read-only public bin URL with {"public":true|false}. Enabling again rotates the URL.',
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "DELETE",
           "/api/v1/bins/:binId/interactions/:requestId",
           "Permanently delete one retained request.",
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/interactions/:requestId/export",
-          "Download one retained request as JSON.",
-          "Bearer key or session",
+          "Download one retained request and its replay and automatic-forwarding attempts as JSON.",
+          "Bin access",
         ],
         [
           "POST",
           "/api/v1/bins/:binId/interactions/:requestId/share",
           'Enable or disable a read-only public request URL with {"public":true|false}.',
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/interactions/:requestId/replay",
           "List the newest 50 retained replay attempts, including effective request snapshots and results.",
-          "Bearer key or session",
+          "Bin access",
         ],
         [
           "POST",
           "/api/v1/bins/:binId/interactions/:requestId/replay",
-          'Replay an optionally edited request, or forward the original through the bin’s configured destination with operation: "forward". Manual forwarding bypasses automatic-forwarding conditions. Every attempt is recorded.',
-          "Bearer key or session",
+          'Replay a request with optional edits, or use operation: "forward" with the bin’s enabled forwarding destination. Manual forwarding bypasses forwarding conditions and can also apply edits. Outbound attempts are recorded; requests rejected before delivery do not create attempts.',
+          "Bin access",
         ],
         [
           "GET",
           "/api/v1/bins/:binId/interactions/:requestId/forwarding",
           "List retained automatic-forwarding attempts for one captured request.",
-          "Bearer key or session",
+          "Bin access",
         ],
       ],
     },
     {
-      title: "MCP OAuth 2.1",
+      title: "MCP and OAuth",
       description:
         "OAuth-capable MCP clients discover these endpoints automatically. Freebin requires authorization code flow with S256 PKCE and explicit account consent.",
       endpoints: [
+        [
+          "POST",
+          "/mcp",
+          "Send MCP JSON-RPC messages over Streamable HTTP. Tool availability depends on the granted bins:read, requests:read, and replay:write scopes.",
+          "OAuth token or account key",
+        ],
         [
           "GET",
           "/.well-known/oauth-protected-resource/mcp",
@@ -179,7 +190,7 @@ export default function Docs({ data = {}, form }: any) {
     {
       title: "Request capture",
       description:
-        "Capture URLs are deliberately outside the management API version. They remain stable destinations for webhook senders.",
+        "Capture URLs accept requests at /b/:binId and any path below it. Use an API key belonging to the bin owner, or the configured public capture key for the designated demo.",
       endpoints: [
         [
           "GET",
@@ -217,6 +228,12 @@ export default function Docs({ data = {}, form }: any) {
           "Capture an OPTIONS request and return the configured response.",
           "Bearer key required",
         ],
+        [
+          "HEAD",
+          "/b/:binId/*",
+          "Capture a HEAD request. The stored body is null and the response has no body.",
+          "Bearer key required",
+        ],
       ],
     },
     {
@@ -227,7 +244,7 @@ export default function Docs({ data = {}, form }: any) {
         [
           "GET",
           "/api/config",
-          "Return public browser configuration: signup availability plus the optional RUM beacon-script URL and public token.",
+          "Return signup availability, the optional browser telemetry script URL, application name, deployment environment, and application version.",
           "Public",
         ],
         [
@@ -251,8 +268,8 @@ export default function Docs({ data = {}, form }: any) {
         [
           "GET",
           "/api/me",
-          "Return the signed-in account, byte usage and limit, and owned bins. Returns user: null when signed out.",
-          "Session",
+          "Return the signed-in account, storage usage and limit, and owned or shared bins. Signed-out callers receive user: null and an empty bins array.",
+          "Session optional",
         ],
         [
           "DELETE",
@@ -286,30 +303,26 @@ export default function Docs({ data = {}, form }: any) {
       <title>{"API Documentation | freebin.org"}</title>
       <meta
         name="description"
-        content="Versioned freebin API, CLI, SDK examples, and service limits."
+        content="Freebin REST API reference, authentication, CLI, client examples, and service limits."
       />
 
       <div className="shell">
         <main className="docs">
           <p className="eyebrow">{"Developer platform"}</p>
-          <h1>
-            {"Small API."}
-            <br />
-            {"Stable contract."}
-          </h1>
+          <h1>{"API documentation"}</h1>
           <p className="lede">
             {
-              "Build local webhook workflows with the versioned API, a dependency-free CLI, reusable SDK examples, and an OpenAPI 3.1 contract. Creating a bin confirms acceptance of the "
+              "Use the REST API to create bins, capture and inspect HTTP requests, configure responses, and replay traffic. This reference includes authentication requirements, a Node.js CLI, client examples, and an OpenAPI 3.1 specification. Bin creation requires acceptance of the "
             }
             <Link href="/terms">{"Terms and Conditions"}</Link>
             {"."}
           </p>
 
           <nav aria-label="Developer resources" className="resources">
-            <a href="https://github.com/corridora/freebin/blob/main/quickstart.md">
+            <a href="#quickstart">
               <strong>{"Quickstart"}</strong>
               <span>
-                {"Capture, inspect, replay, and automate your first request."}
+                {"Create a bin, send a request, and inspect the capture."}
               </span>
             </a>
             <a href="/openapi.yaml">
@@ -337,21 +350,23 @@ export default function Docs({ data = {}, form }: any) {
             <p>
               {"Management endpoints use "}
               <code>{"/api/v1"}</code>
-              {
-                ". Compatible fields may be added within v1, but existing fields and behavior will not be removed or changed incompatibly. A breaking contract change will use a new major path. Capture URLs remain "
-              }
+              {". Account and session endpoints use /api. Capture URLs use "}
               <code>{"/b/:binId/*"}</code>
               {
-                " so webhook destinations do not change when the management API evolves."
+                " and also accept requests at /b/:binId without a path suffix. Clients should tolerate additional fields in JSON responses."
               }
             </p>
           </section>
 
           <section>
             <h2>{"Install the CLI"}</h2>
+            <p>
+              Use Node.js 24 or later. Set <code>FREEBIN_API_KEY</code> to an
+              account API key before running commands that access your bins.
+            </p>
             <pre>
               {
-                "curl -fsS https://freebin.org/freebin.mjs -o freebin.mjs\nchmod +x freebin.mjs\nFREEBIN_API_KEY=YOUR_API_KEY ./freebin.mjs bins"
+                "curl -fsS https://freebin.org/freebin.mjs -o freebin.mjs\nexport FREEBIN_API_KEY='YOUR_API_KEY'\nnode freebin.mjs bins"
               }
             </pre>
             <p>
@@ -375,17 +390,21 @@ export default function Docs({ data = {}, form }: any) {
               <code>{"assert"}</code>
               {", and "}
               <code>{"delete-request"}</code>
-              {". Watch and local-forward emit JSON lines and accept "}
+              {
+                ". The watch and local-forward commands emit JSON lines and accept "
+              }
               <code>{"--include-existing"}</code>
               {
-                ". Local forwarding runs in the CLI, so it can reach localhost while still stripping authorization, cookies, credential-like, hop-by-hop, and source-address headers. Set "
+                ". Local forwarding runs on the machine running the CLI and can reach localhost. It strips authorization, cookies, credential-like headers, hop-by-hop headers, and selected source-address headers. Set "
               }
-              <code>{"FREEBIN_URL=http://127.0.0.1:8787"}</code>
-              {" for local development."}
+              <code>{"FREEBIN_URL=http://localhost:8788"}</code>
+              {
+                " for a local instance on port 8788; adjust the origin to match your server."
+              }
             </p>
             <pre>
               {
-                "./freebin.mjs assert BIN_ID --method POST --path '/webhooks/*' \\\n  --header x-event=invoice.created --body-json data.status=paid --timeout 30"
+                "node freebin.mjs assert BIN_ID --method POST --path '/webhooks/*' \\\n  --header x-event=invoice.created --body-json data.status=paid --timeout 30"
               }
             </pre>
             <p>
@@ -399,10 +418,23 @@ export default function Docs({ data = {}, form }: any) {
               <code>{"1"}</code>
               {" a usage or operational error."}
             </p>
+            <p>
+              Start an assertion before triggering the webhook. By default it
+              matches requests captured after the command starts. Use
+              <code>{" --include-existing"}</code> to include retained requests,
+              or <code>--since</code> with an ISO timestamp. Assertions check
+              the latest 100 requests on each poll.
+            </p>
           </section>
 
           <section>
             <h2>{"Connect an MCP client"}</h2>
+            <p>
+              Configure a remote MCP connection to
+              <code>{" https://freebin.org/mcp"}</code>. The following example
+              applies to clients that accept an <code>mcpServers</code> object;
+              configuration syntax varies by client.
+            </p>
             <pre>
               {
                 '{\n  "mcpServers": {\n    "freebin": {\n      "url": "https://freebin.org/mcp"\n    }\n  }\n}'
@@ -423,8 +455,15 @@ export default function Docs({ data = {}, form }: any) {
             </p>
           </section>
 
-          <section>
+          <section id="quickstart">
             <h2>{"Create a bin"}</h2>
+            <p>
+              Sign in at <Link href="/account">Account</Link> and create an API
+              key in the API keys tab. Replace <code>YOUR_API_KEY</code> in the
+              examples with that key. Create a bin and use the returned
+              <code>{" bin.binId"}</code> wherever an example uses
+              <code>{" YOUR_BIN_ID"}</code>.
+            </p>
             <pre>
               {
                 'curl -X POST https://freebin.org/api/v1/bins \\\n  -H "authorization: Bearer YOUR_API_KEY" \\\n  -H "content-type: application/json" \\\n  -d \'{"name":"Payments dev","termsAccepted":true}\''
@@ -439,6 +478,12 @@ export default function Docs({ data = {}, form }: any) {
                 'curl -X POST https://freebin.org/b/YOUR_BIN_ID/events \\\n  -H "authorization: Bearer YOUR_API_KEY" \\\n  -H "content-type: application/json" \\\n  -d \'{"status":"ok"}\''
               }
             </pre>
+            <p>
+              A stored capture returns <code>X-Freebin-Captured: true</code>.
+              The response status, headers, and body come from the first
+              matching response rule or the bin’s fallback configuration. A
+              configured error status can still indicate a successful capture.
+            </p>
           </section>
 
           <section>
@@ -448,13 +493,39 @@ export default function Docs({ data = {}, form }: any) {
                 'curl "https://freebin.org/api/v1/bins/YOUR_BIN_ID/interactions?limit=50" \\\n  -H "authorization: Bearer YOUR_API_KEY"'
               }
             </pre>
+            <p>
+              Headers and JSON or form fields with common credential names are
+              redacted before storage. Private gzip bodies are returned as
+              <code>{" freebin:base64:<encoded bytes>"}</code>. GET and HEAD
+              captures have a null body. The public demo applies additional
+              redaction and does not expose source addresses.
+            </p>
+          </section>
+
+          <section>
+            <h2>HTTP client examples</h2>
+            <p>
+              The{" "}
+              <a href="https://github.com/corridora/freebin/blob/main/src/site/examples/javascript.mjs">
+                JavaScript example
+              </a>{" "}
+              and
+              <a href="https://github.com/corridora/freebin/blob/main/src/site/examples/python.py">
+                {" "}
+                Python example
+              </a>{" "}
+              provide reusable functions for listing bins, creating bins, and
+              listing requests. Both read <code>FREEBIN_API_KEY</code> and the
+              optional
+              <code>{" FREEBIN_URL"}</code> environment variable.
+            </p>
           </section>
 
           <section>
             <h2>{"Inspector filtering"}</h2>
             <p>
               {
-                "The browser inspector filters its loaded retained history by free text, HTTP method, capture time range, path, content type, header name and value, and dotted JSON body fields. Filter and paging state is encoded in the URL and restored by browser history, making a filtered inspector URL shareable with another authorized user. Named saved views are planned for a later phase."
+                "The browser inspector filters its loaded retained history by free text, HTTP method, capture time range, path, content type, header name and value, and dotted JSON body fields. Filter and paging state is encoded in the URL and restored by browser history, making a filtered inspector URL shareable with another authorized user. Filters apply in the browser; the request-list API supports pagination rather than these filter predicates."
               }
             </p>
           </section>
@@ -490,16 +561,33 @@ export default function Docs({ data = {}, form }: any) {
               {". New keys use the "}
               <code>{"fb_<uuid>"}</code>
               {
-                " format. Existing keys remain valid. Keys are user-scoped, shown only once, individually revocable, and limited to five active keys per account. Every capture method requires a key belonging to the destination bin’s owner."
+                " format with a UUID v4. Existing keys remain valid. Keys are scoped to an account, shown only once, individually revocable, and limited to five active keys per account. Capture requests require a key belonging to the bin owner; the designated public demo also accepts its configured public capture key. Browser session cookies do not authenticate capture requests."
               }
+            </p>
+            <p>
+              Bin-scoped management endpoints also accept an authorized browser
+              session. Anonymous inspector capabilities are accepted by the
+              supported bin-management endpoints as bearer credentials. Visiting
+              the token-bearing <code>inspectUrl</code> returned at creation
+              exchanges that capability for a Secure, HttpOnly cookie scoped to
+              the bin’s API path. A <code>token</code> query parameter does not
+              authenticate API requests. Collaborators use browser sessions and
+              require the permission for each operation; API keys access owned
+              bins only.
+            </p>
+            <p>
+              Mutation requests outside capture endpoints must use the service’s
+              origin when an <code>Origin</code> header is present. OAuth access
+              tokens authenticate MCP requests; use account API keys for the
+              REST API.
             </p>
           </section>
 
           <section>
-            <h2>{"Complete endpoint reference"}</h2>
+            <h2>{"Endpoint reference"}</h2>
             <p>
               {
-                "All currently implemented API and capture endpoints are listed below. Public share URLs are read-only web pages rather than JSON API endpoints."
+                "The reference below covers management, capture, account, and MCP endpoints. Use the OpenAPI specification for REST request and response schemas. Public share URLs are read-only web pages."
               }
             </p>
             {endpointGroups.map((group, _index0) => (
@@ -527,36 +615,36 @@ export default function Docs({ data = {}, form }: any) {
           </section>
 
           <section>
-            <h2>{"Documented service limits"}</h2>
+            <h2>{"Service limits"}</h2>
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
                     <th>{"Limit"}</th>
                     <th>{"Registered"}</th>
-                    <th>{"Canonical demo"}</th>
+                    <th>{"Public demo"}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <th scope="row">{"Capture rate"}</th>
                     <td>{"20 requests/second per user"}</td>
-                    <td>{"1 request/second for the canonical demo"}</td>
+                    <td>{"1 request/second by default"}</td>
                   </tr>
                   <tr>
                     <th scope="row">{"Request body"}</th>
-                    <td>{"1 MB"}</td>
-                    <td>{"20 KB for the canonical demo"}</td>
+                    <td>{"1 MiB"}</td>
+                    <td>{"20 KiB by default"}</td>
                   </tr>
                   <tr>
                     <th scope="row">{"Retention"}</th>
-                    <td>{"5 MB per account by default"}</td>
-                    <td>{"1 MB for the canonical demo"}</td>
+                    <td>{"5 MiB per account by default"}</td>
+                    <td>{"1 MiB by default"}</td>
                   </tr>
                   <tr>
                     <th scope="row">{"Bins"}</th>
                     <td>{"5 per account"}</td>
-                    <td>{"Subject to creation abuse controls"}</td>
+                    <td>{"One configured demo bin"}</td>
                   </tr>
                   <tr>
                     <th scope="row">{"API keys"}</th>
@@ -568,10 +656,10 @@ export default function Docs({ data = {}, form }: any) {
                     <td colSpan={2}>{"1–100 requests or all; default 10"}</td>
                   </tr>
                   <tr>
-                    <th scope="row">{"Custom response fields"}</th>
+                    <th scope="row">{"Fallback response fields"}</th>
                     <td colSpan={2}>
                       {
-                        "500 UTF-8 bytes per text field and serialized headers field"
+                        "500 UTF-8 bytes each for body, content type, and the JSON-serialized response headers"
                       }
                     </td>
                   </tr>
@@ -585,14 +673,26 @@ export default function Docs({ data = {}, form }: any) {
                     <td>{"Same per-bin limits"}</td>
                   </tr>
                   <tr>
-                    <th scope="row">{"Replay and forward egress"}</th>
+                    <th scope="row">Rule payload</th>
+                    <td colSpan={2}>
+                      8 KiB per normalized rule; up to 5 conditions
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Portable configuration import</th>
+                    <td colSpan={2}>
+                      320 KiB per JSON document; 10 imports/minute per bin
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">{"Replay and manual forwarding"}</th>
                     <td>{"20 requests/second per account"}</td>
                     <td>{"1 request/second"}</td>
                   </tr>
                   <tr>
-                    <th scope="row">{"Bulk egress concurrency"}</th>
+                    <th scope="row">{"Browser bulk egress concurrency"}</th>
                     <td colSpan={2}>
-                      {"3 requests in flight; no cancellation"}
+                      {"3 concurrent operations; cancellation is not supported"}
                     </td>
                   </tr>
                 </tbody>
@@ -600,26 +700,26 @@ export default function Docs({ data = {}, form }: any) {
             </div>
             <p>
               {
-                "Retention is byte-based across captures and replay history. Old replay attempts are evicted before captured requests when the account reaches its allowance. There is no date-based cleanup. Rate-limited requests return "
+                "Storage and body sizes use binary units (1 KiB = 1,024 bytes; 1 MiB = 1,048,576 bytes). Public-demo quotas are deployment-configurable. Retention is byte-based across captures and replay history: the oldest replay attempts are evicted before captured requests when storage exceeds the allowance. There is no date-based cleanup. Rate-limited requests return "
               }
               <code>{"429"}</code>
-              {"; oversized requests return "}
+              {"; capture bodies that exceed the body limit return "}
               <code>{"413"}</code>
               {"."}
             </p>
             <p>
               {
-                "Automatic forwarding is best-effort: one destination per bin, a 10-second timeout, no redirects, and no retries. Each captured request has separate pending, delivered, or failed attempt history with destination, response code, error, latency, and timestamps; the request-level fields summarize the latest result. The original path and query are appended to the configured base URL. Credential-like headers are stripped by default and may be retained with a per-bin allowlist. Authorization is always removed because it contains the Freebin API key; hop-by-hop and source-address headers are also never forwarded."
+                "Automatic forwarding is best-effort: one destination per bin, a 10-second timeout, no redirects, and no retries. Up to five AND conditions select which captures to forward; an empty condition list forwards every new capture. Manual forwarding bypasses these conditions. Each forwarded capture has separate pending, delivered, or failed attempt history with destination, response code, error, latency, and timestamps; the request-level fields summarize the latest result. The original path and query are appended to the configured base URL. Credential-like headers are stripped by default and may be retained with a per-bin allowlist. Authorization, transport-control headers, selected source-address headers, and trace propagation headers are always removed."
               }
             </p>
             <p>
               {
-                "Conditional responses evaluate up to five enabled rules in order and stop at the first match. Each rule supports up to five AND conditions over method, path, query, selected headers, and JSON or form body fields using equals, exists, contains, or glob. Rules cannot inspect authorization or cookie headers. Static responses may delay for up to five seconds."
+                "Conditional responses evaluate up to five enabled rules in order and stop at the first match. Each rule supports up to five AND conditions over method, path, query, selected headers, and JSON or form body fields using equals, exists, contains, or glob. Rules cannot inspect authorization, proxy-authorization, or cookie headers. Compressed bodies are not evaluated by body conditions. Static responses may delay for up to five seconds."
               }
             </p>
             <p>
               {
-                "Replay attempts preserve the original capture and store the effective edited request plus its result separately. Replay history shares the account retention budget; oldest replay attempts are evicted before captured requests. Replay uses a 10-second timeout, does not follow redirects, and strips authorization, cookies, credential-like, hop-by-hop, and source-address headers."
+                "Replay attempts preserve the original capture and store the effective edited request plus its result separately. Replay history shares the account retention budget; oldest replay attempts are evicted before captured requests. Replay uses a 10-second timeout, does not follow redirects, and strips authorization, cookies, credential-like headers, hop-by-hop headers, selected source-address headers, and trace propagation headers."
               }
             </p>
           </section>
@@ -627,10 +727,10 @@ export default function Docs({ data = {}, form }: any) {
           <section>
             <h2>{"Error model"}</h2>
             <p>
-              {"JSON API errors use "}
+              {"REST API errors generally use "}
               <code>{'{"error":"Human-readable message"}'}</code>
               {
-                ". Clients should branch on HTTP status codes and treat the message as diagnostic text, not a stable machine identifier."
+                ". Some endpoints include an additional code field. Clients should branch on HTTP status codes and treat the message as diagnostic text. Stream authorization and availability errors use plain text. Capture responses use the bin’s configured response format, and MCP uses its protocol-specific error format. Replay delivery errors are returned with attempt details; a destination HTTP error still returns API status 200, while a transport failure returns 502."
               }
             </p>
           </section>
