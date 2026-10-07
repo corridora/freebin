@@ -96,4 +96,4 @@ npm test
 | [src/test/](src/test/)                                 | Client and webview tests.                                        |
 | [resources/fonts/](resources/fonts/)                   | Bundled Latin fonts and their SIL Open Font License notices.     |
 
-Follow the [contribution guide](../../CONTRIBUTING.md) for pull requests. This extension is part of [corridora/freebin.org](https://github.com/corridora/freebin.org) and uses the [MIT license](LICENSE).
+Follow the [contribution guide](../../CONTRIBUTING.md) for pull requests. This extension is part of [corridora/freebin.org](https://github.com/corridora/freebin) and uses the [MIT license](LICENSE).

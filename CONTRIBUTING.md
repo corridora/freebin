@@ -78,6 +78,6 @@ For performance work, use comparable before/after workloads. The application's `
 
 ## Report issues
 
-File bugs in [GitHub Issues](https://github.com/corridora/freebin.org/issues) with the affected component, reproduction steps, expected behavior, observed behavior, and relevant runtime/browser versions. Reduce webhook samples and remove credentials or personal data before sharing them.
+File bugs in [GitHub Issues](https://github.com/corridora/freebin/issues) with the affected component, reproduction steps, expected behavior, observed behavior, and relevant runtime/browser versions. Reduce webhook samples and remove credentials or personal data before sharing them.
 
 For dependency updates, retain the lockfile, review `npm audit`, and run the checks for the affected application or extension.

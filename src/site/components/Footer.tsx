@@ -22,7 +22,7 @@ export default function Footer({
           <Link href="/terms">{"Terms"}</Link>
           {" ·\n    "}
           <a
-            href="https://github.com/corridora/freebin.org"
+            href="https://github.com/corridora/freebin"
             target="_blank"
             rel="noreferrer"
           >
