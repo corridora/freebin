@@ -269,7 +269,7 @@ export default function Docs({ data = {}, form }: any) {
         [
           "POST",
           "/api/account/token",
-          "Create a named user API key. The full token is returned once; accounts may have five active keys.",
+          "Create a named user API key in fb_<uuid> format. The full token is returned once; accounts may have five active keys.",
           "Session required",
         ],
         [
@@ -487,8 +487,10 @@ export default function Docs({ data = {}, form }: any) {
             <p>
               {"Send an account API key as "}
               <code>{"Authorization: Bearer YOUR_API_KEY"}</code>
+              {". New keys use the "}
+              <code>{"fb_<uuid>"}</code>
               {
-                ". Keys are user-scoped, shown only once, individually revocable, and limited to five active keys per account. Every capture method requires a key belonging to the destination bin’s owner."
+                " format. Existing keys remain valid. Keys are user-scoped, shown only once, individually revocable, and limited to five active keys per account. Every capture method requires a key belonging to the destination bin’s owner."
               }
             </p>
           </section>

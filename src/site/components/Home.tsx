@@ -32,7 +32,7 @@ export default function Home({ data = {}, form }: any) {
               </h1>
               <p className="lede">
                 {
-                  "Create an account, add an endpoint, and inspect exactly what arrived. Registered bins are private by default with higher request and retention limits."
+                  "Create an account, add an endpoint, and inspect exactly what arrived. User bins are private by default with higher limits."
                 }
               </p>
               <Link href="/account" className="primary account-cta">
@@ -61,15 +61,15 @@ export default function Home({ data = {}, form }: any) {
                 <br />
                 <div>{`{`}</div>
                 <div>
-                    <span className="orange">{'"type"'}</span>
+                  <span className="orange">{'"type"'}</span>
                   {': "payment.succeeded",'}
                 </div>
                 <div>
-                    <span className="orange">{'"amount"'}</span>
+                  <span className="orange">{'"amount"'}</span>
                   {": 4200,"}
                 </div>
                 <div>
-                    <span className="orange">{'"currency"'}</span>
+                  <span className="orange">{'"currency"'}</span>
                   {': "usd"'}
                 </div>
                 <div>{`}`}</div>
@@ -89,16 +89,11 @@ export default function Home({ data = {}, form }: any) {
               {data.demoBinId ? (
                 <>
                   <p>
-                    {"Copy and run this command, then view it in the "}
-                    <Link href="/demo">{"shared public history"}</Link>
-                    {
-                      ". Demo traffic shares a 1 request/second limit, accepts up to 20 KB, and retains 1 MB."
-                    }
-                  </p>
-                  <p>
-                    {"Demo bin ID: "}
-                    <code>{data.demoBinId}</code>
-                    {"."}
+                    <ol><li>{"Copy this command"}</li>
+                      <li>{"Run from the terminal"}</li>
+                      <li>{"View in the"} <Link href="/demo">{"shared public history"}</Link></li>
+                    </ol>
+                    <small>{"Demo shares a 1 request/second and 20 KB payload."}</small>
                   </p>
                 </>
               ) : (
@@ -132,11 +127,8 @@ export default function Home({ data = {}, form }: any) {
             <article className="feature">
               <span className="feature-num">{"02 / SEND"}</span>
               <h2>{"Any HTTP request"}</h2>
-              <p>
-                {
-                  "POST, PUT, PATCH, custom headers, query strings, JSON or plain text—we catch it."
-                }
-              </p>
+              <p>{"POST, PUT, PATCH, custom headers, query strings, JSON or plain text"}</p>
+              <h4>{"We catch it."}</h4>
             </article>
             <article className="feature">
               <span className="feature-num">{"03 / INSPECT"}</span>

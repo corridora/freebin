@@ -17,7 +17,7 @@
   align-items: center;
   gap: 26px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 400;
 }
 [data-view="Header"] .site-links a {
   text-decoration: none;
@@ -25,6 +25,7 @@
 }
 [data-view="Header"] .bin-menu {
   position: relative;
+  font-weight: 400;
 }
 [data-view="Header"] .bin-menu summary {
   cursor: pointer;
@@ -85,7 +86,7 @@
   background: #17231d;
   color: #fff;
   font: inherit;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
 }
 [data-view="Header"] .create-bin-form button:disabled {
@@ -107,7 +108,7 @@
   background: none;
   color: #53635a;
   font: inherit;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
 }
