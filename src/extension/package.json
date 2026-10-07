@@ -7,7 +7,7 @@
   "publisher": "freebinorg",
   "repository": {
     "type": "git",
-    "url": "https://github.com/corridora/freebin.org.git"
+    "url": "https://github.com/corridora/freebin.git"
   },
   "engines": {
     "vscode": "^1.92.0"

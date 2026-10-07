@@ -306,7 +306,7 @@ export default function Docs({ data = {}, form }: any) {
           </p>
 
           <nav aria-label="Developer resources" className="resources">
-            <a href="https://github.com/corridora/freebin.org/blob/main/quickstart.md">
+            <a href="https://github.com/corridora/freebin/blob/main/quickstart.md">
               <strong>{"Quickstart"}</strong>
               <span>
                 {"Capture, inspect, replay, and automate your first request."}

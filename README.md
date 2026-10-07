@@ -18,7 +18,7 @@ The web application uses Next.js App Router, React, and SWR. Cloudflare builds r
 Use Node.js 24 or newer and npm.
 
 ```bash
-git clone https://github.com/corridora/freebin.org.git
+git clone https://github.com/corridora/freebin.git
 cd freebin.org
 npm run install:app
 cd src/site
@@ -78,7 +78,7 @@ Deployment reads `.env` values and keeps Cloudflare credentials out of applicati
 
 ## Contribute
 
-Open a [GitHub issue](https://github.com/corridora/freebin.org/issues) for a reproducible bug or feature proposal. Pull requests should explain the behavior change and include the relevant checks from [CONTRIBUTING.md](CONTRIBUTING.md).
+Open a [GitHub issue](https://github.com/corridora/freebin/issues) for a reproducible bug or feature proposal. Pull requests should explain the behavior change and include the relevant checks from [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [Pull request CI](.github/workflows/pr-ci.yml) checks the application, Worker packaging, browser journeys, extension, and diff hygiene.
 
